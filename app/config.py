@@ -1,12 +1,15 @@
+from typing import Optional
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class Config(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_DB: str
     POSTGRES_PASSWORD: str
     DB_PORT: int
     DB_HOST: str
+    MODE: Optional[str] = "DEV"
 
     @property
     def DATABASE_URL_async(self):
@@ -16,5 +19,8 @@ class Settings(BaseSettings):
         validate_default=False, env_file=".env", extra="allow"
     )
 
+    def get_mode(self):
+        return True if self.MODE == "DEV" else False
 
-settings = Settings()
+
+config = Config()
