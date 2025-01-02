@@ -1,12 +1,13 @@
 import asyncio
 from logging.config import fileConfig
 
-from alembic import context
-from api.models import SpacedRepetition
-from core.db import Base
-from settings import settings
 from sqlalchemy import Connection, engine_from_config, pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
+
+from alembic import context
+from app.config import config as global_config
+from app.domain.models.repeptition import Repetition
+from app.infrastucture.db.base import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -23,7 +24,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
 
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL_async)
+config.set_main_option("sqlalchemy.url", global_config.DATABASE_URL_async)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
