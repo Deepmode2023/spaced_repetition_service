@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Optional
 
-from ..models.date_type import DateType
-from ..models.repetition import Repetition, SlugRepetition
+from ..models.repetition import Repetition
+from ..models.type.date_type import DateType
 
 
 @dataclass(eq=False, frozen=True)
@@ -39,7 +39,7 @@ class RepetitionRepository(ABC):
         title: Optional[str] = None,
         description: Optional[str] = None,
         document_link: Optional[str] = None,
-        slug: Optional[SlugRepetition] = None,
+        slugs: Optional[list[str]] = [],
     ) -> bool:
         """
         Updates an existing repetition with the provided data.
@@ -49,7 +49,7 @@ class RepetitionRepository(ABC):
             title (Optional[str], optional): The new title for the repetition. Defaults to None.
             description (Optional[str], optional): The new description for the repetition. Defaults to None.
             document_link (Optional[str], optional): The new document link for the repetition. Defaults to None.
-            slug (Optional[SlugRepetition], optional): The new slug for the repetition. Defaults to None.
+            slug (Optional[list[str]], optional): The new slug for the repetition. Defaults to None.
 
         Returns:
             bool: True if the update was successful, False otherwise.
@@ -68,7 +68,7 @@ class RepetitionRepository(ABC):
         user_id: str,
         description: Optional[str] = None,
         document_link: Optional[str] = None,
-        slug: Optional[SlugRepetition] = None,
+        slugs: Optional[list[str]] = [],
     ) -> Repetition:
         """
         Creates a new repetition.
@@ -78,7 +78,7 @@ class RepetitionRepository(ABC):
             user_id (str): The ID of the user creating the repetition.
             description (Optional[str], optional): A description of the repetition. Defaults to None.
             document_link (Optional[str], optional): A link to a related document. Defaults to None.
-            slug (Optional[SlugRepetition], optional): A unique slug for the repetition. Defaults to None.
+            slug (Optional[list[str]], optional): A unique slug for the repetition. Defaults to None.
 
         Returns:
             Repetition: The created repetition object.

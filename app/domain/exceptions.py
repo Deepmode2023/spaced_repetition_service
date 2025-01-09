@@ -1,7 +1,14 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional
+from enum import Enum
 
 from .base import BaseException
+
+
+class EnumABC(Enum, ABC):
+    @abstractmethod
+    def fields(self):
+        pass
 
 
 @dataclass(frozen=True)
@@ -11,9 +18,6 @@ class RepetitionAlreadyExistsError(BaseException):
 
     def get_message(self) -> str:
         return f"Repetition '{self.repetition_title}' already exists. {self.message}"
-
-
-from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
@@ -44,3 +48,12 @@ class DatabaseError(BaseException):
 
     def get_message(self) -> str:
         return f"Database error occurred during '{self.operation}' operation. {self.message}"
+
+
+@dataclass(frozen=True, kw_only=True)
+class UnknownFieldInsideEnum(BaseException):
+    status: int = 409
+    enum: EnumABC
+
+    def get_message(self) -> str:
+        return f"Unknown field inside enum {self.enum.__class__.name}. Possible options {self.enum.fields()}. Addiction message: {self.message}"

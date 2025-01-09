@@ -3,7 +3,7 @@ from math import floor, log10
 import pendulum
 from pydantic import ValidationInfo
 
-from ..utils.time import convert_to_timestamp
+from ...utils.time import convert_to_timestamp
 
 
 class DateType:

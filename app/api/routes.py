@@ -4,9 +4,16 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.application.queries.get_all_repetition import get_all_repetition
+from app.schemas.create_repeptition import CreateFileRepetitionRequest
 
 from .date_type import OptionalQueryDateType, RequiredQueryDateType
-from .dependencies import session
+from .dependencies import auth_marker, session
+
+with_auth_repetition_route = APIRouter(
+    prefix="/repetition",
+    tags=["Repetition"],
+    # dependencies=[Depends(auth_marker)],
+)
 
 repetition_route = APIRouter(prefix="/repetition", tags=["Repetition"])
 
@@ -26,3 +33,17 @@ async def get_repetition(
         offset=offset,
         session=session,
     )
+
+
+@with_auth_repetition_route.post("/create_repetition/simple")
+async def create_simple_repetition(
+    user_id: str,
+    title: str,
+    description: str,
+):
+    pass
+
+
+@with_auth_repetition_route.post("/create_repetition/file")
+async def create_file_repetition(request: CreateFileRepetitionRequest):
+    pass

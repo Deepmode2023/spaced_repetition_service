@@ -2,12 +2,16 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, Optional
 
-class SlugRepetition(str, Enum):
-    FILE = str
-    TEXT = str
+class RepetitionContentTypeEnum(str, Enum):
+    FILE = RepetitionContentTypeEnum
+    WORD = RepetitionContentTypeEnum
+    TEXT = RepetitionContentTypeEnum
+
+    @classmethod
+    def fields(cls): ...
 
 @dataclass(kw_only=True)
-class Repetition:
+class RepetitionAggragetion:
     slug: str
     title: str
     description: Optional[str]
@@ -16,6 +20,8 @@ class Repetition:
     count_repetition: int
     date_repetition: int
     date_last_repetition: Optional[int]
+    content_id: str
+    content_type: RepetitionContentTypeEnum
 
     def __repr__(self) -> str: ...
     def __eq__(self, other: object) -> bool: ...

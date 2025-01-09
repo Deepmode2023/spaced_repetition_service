@@ -10,6 +10,7 @@ class Config(BaseSettings):
     DB_PORT: int
     DB_HOST: str
     MODE: Optional[str] = "DEV"
+    AUTH_MARKER: str
 
     @property
     def DATABASE_URL_async(self):

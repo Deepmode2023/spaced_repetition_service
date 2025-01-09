@@ -1,52 +1,62 @@
 from enum import Enum
 from uuid import uuid4
 
-import pendulum
-from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, String
 
 from app.infrastucture.db.base import Base
 
-
-class SlugRepetition(str, Enum):
-    FILE = "FILE"
-    TEXT = "TEXT"
+from .word.word_repetition import WordRepetition
 
 
-class Repetition(Base):
+class RepetitionContentTypeEnum(str, Enum):
+    FILE = "file"
+    WORD = "word"
+    TEXT = "text"
+
+    @classmethod
+    def fields(cls):
+        """
+        Returns all fields of the enum as a dictionary.
+
+        Returns:
+            dict: A dictionary with enum names as keys and values as enum values.
+        """
+        return {item.name: item.value for item in cls}
+
+
+class RepetitionAggragetion(Base):
     __tablename__ = "repetitions"
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid4()))
-    slug = Column(String(20), nullable=True, default=SlugRepetition.FILE)
-    title = Column(String, nullable=False, unique=True)
-    description = Column(String, nullable=True)
-    document_link = Column(String, nullable=True)
-    user_id = Column(String, nullable=False)
-    count_repetition = Column(Integer, default=0)
-    date_repetition = Column(Integer, nullable=False, default=pendulum.now().date)
-    date_last_repetition = Column(Integer, nullable=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    content_type = Column(String, nullable=False)
+    content_id = Column(String(36), nullable=False)
 
-    def __repr__(self):
-        return f"SpacedRepetiotionsModel(id={self.id}, title={self.title})"
+    @property
+    def content(self):
+        from ..exceptions import UnknownFieldInsideEnum
 
-    def __eq__(self, other):
-        if isinstance(other, Repetition):
-            return (
-                self.slug == other.slug
-                and self.title == other.title
-                and self.user_id == other.user_id
+        if self.content_type == RepetitionContentTypeEnum.WORD:
+            return self.session.query(WordRepetition).get(self.content_id)
+        elif self.content_type == RepetitionContentTypeEnum.FILE:
+            return
+            # return self.session.query(FileRepetition).get(self.content_id)
+        elif self.content_type == RepetitionContentTypeEnum.TEXT:
+            # return self.session.query(TextRepetition).get(self.content_id)
+            return
+        else:
+            raise UnknownFieldInsideEnum(
+                message=f"Unknown content_type: {self.content_type}",
+                enum=RepetitionContentTypeEnum,
             )
-        return False
 
     @property
     def to_json(self):
-        return {
+        data = {
             "id": self.id,
-            "title": self.title,
-            "slug": self.slug,
-            "description": self.description,
-            "user_id": self.user_id,
-            "count_repetition": self.count_repetition,
-            "date_repetition": self.date_repetition,
-            "date_last_repetition": self.date_last_repetition,
+            "content_type": self.content_type,
+            "content_id": self.content_id,
         }
+        if hasattr(self.content, "to_json"):
+            data.update(self.content.to_json)
+
+        return data
