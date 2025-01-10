@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from typing import List
 
+import pendulum
 from sqlalchemy import ChunkedIteratorResult, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.models import DateType, Repetition
+from app.domain.models import RepetitionAggragetion, RepetitionStatusEnum
+from app.domain.models.type import DateType
 from app.domain.repositories.repetition_repository import RepetitionRepository
 
 
@@ -22,12 +24,12 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
         end_date: DateType,
         limit: int,
         offset: int,
-    ) -> List[Repetition]:
+    ) -> List[RepetitionAggragetion]:
         stmt = (
-            select(Repetition)
+            select(RepetitionAggragetion)
             .where(
-                Repetition.date_repetition >= start_date.timestamp,
-                Repetition.date_repetition <= end_date.timestamp,
+                RepetitionAggragetion.date_repetition >= start_date.timestamp,
+                RepetitionAggragetion.date_repetition <= end_date.timestamp,
             )
             .limit(limit)
             .offset(offset)
@@ -41,7 +43,7 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
         description=None,
         document_link=None,
         slug=None,
-    ) -> Repetition:
+    ) -> RepetitionAggragetion:
         pass
 
     async def create_repetition(

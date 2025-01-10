@@ -2,6 +2,13 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, Optional
 
+class RepetitionStatusEnum(str, Enum):
+    SUCCESSFUL = RepetitionStatusEnum
+    UNSUCCESSFUL = RepetitionStatusEnum
+
+    @classmethod
+    def fields(cls): ...
+
 class RepetitionContentTypeEnum(str, Enum):
     FILE = RepetitionContentTypeEnum
     WORD = RepetitionContentTypeEnum

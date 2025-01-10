@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Optional
 
-from ..models.repetition import Repetition
-from ..models.type.date_type import DateType
+from ..models import RepetitionAggragetion
+from ..models.type import DateType
 
 
 @dataclass(eq=False, frozen=True)
@@ -14,7 +14,7 @@ class RepetitionRepository(ABC):
         end_date: DateType,
         limit: int,
         offset: int,
-    ) -> List[Repetition]:
+    ) -> List[RepetitionAggragetion]:
         """
         Retrieves all repetitions within the specified date range.
 
@@ -25,7 +25,7 @@ class RepetitionRepository(ABC):
             offset (int): Number of repetitions to skip.
 
         Returns:
-            List[Repetition]: A list of repetitions.
+            List[RepetitionAggragetion]: A list of repetitions.
 
         Raises:
             RepetitionAlreadyExistsError: If a repetition with the same title already exists.
@@ -69,7 +69,7 @@ class RepetitionRepository(ABC):
         description: Optional[str] = None,
         document_link: Optional[str] = None,
         slugs: Optional[list[str]] = [],
-    ) -> Repetition:
+    ) -> RepetitionAggragetion:
         """
         Creates a new repetition.
 
@@ -81,7 +81,7 @@ class RepetitionRepository(ABC):
             slug (Optional[list[str]], optional): A unique slug for the repetition. Defaults to None.
 
         Returns:
-            Repetition: The created repetition object.
+            RepetitionAggragetion: The created repetition object.
 
         Raises:
             RepetitionAlreadyExistsError: If a repetition with the same title or slug already exists.
@@ -91,12 +91,12 @@ class RepetitionRepository(ABC):
         ...
 
     @abstractmethod
-    async def successful_repetition(id: int) -> bool:
+    async def successful_repetition(repetition_id: str) -> bool:
         """
         Marks a repetition as successful.
 
         Args:
-            id (int): The unique identifier of the repetition to mark as successful.
+            repetition_id (str): The unique identifier of the repetition to mark as successful.
 
         Returns:
             bool: True if the operation was successful, False otherwise.
@@ -108,12 +108,12 @@ class RepetitionRepository(ABC):
         ...
 
     @abstractmethod
-    async def unsuccessful_repetition(id: int) -> bool:
+    async def unsuccessful_repetition(repetition_id: str) -> bool:
         """
         Marks a repetition as unsuccessful.
 
         Args:
-            id (int): The unique identifier of the repetition to mark as unsuccessful.
+            repetition_id (str): The unique identifier of the repetition to mark as unsuccessful.
 
         Returns:
             bool: True if the operation was successful, False otherwise.

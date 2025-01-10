@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.domain.exceptions as dom_ex
-from app.domain.models import DateType, Repetition
-from app.domain.models.repetition import Repetition
+from app.domain.models import RepetitionAggragetion
+from app.domain.models.type import DateType
 from app.infrastucture.repositories.sqlalchemy_repository import (
     SQLAlchemyRepetitionRepository,
 )
@@ -42,7 +42,7 @@ async def get_all_repetition(
     dao = SQLAlchemyRepetitionRepository(session=session)
 
     try:
-        scalar_result: list[Repetition] = await dao.get_all_repetitions(
+        scalar_result: list[RepetitionAggragetion] = await dao.get_all_repetitions(
             start_date=start_date,
             end_date=end_date,
             limit=limit,
