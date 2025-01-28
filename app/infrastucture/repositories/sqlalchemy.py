@@ -5,9 +5,14 @@ import pendulum
 from sqlalchemy import ChunkedIteratorResult, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domain.models import RepetitionAggragetion, RepetitionStatusEnum
+from app.domain.models import (
+    RepetitionAggragetion,
+    RepetitionContentTypeEnum,
+    RepetitionStatusEnum,
+)
 from app.domain.models.type import DateType
-from app.domain.repositories.repetition_repository import RepetitionRepository
+from app.domain.repositories.repetition import RepetitionRepository
+from app.domain.services.repetition import RepetitionServices
 
 
 @dataclass(
@@ -17,6 +22,7 @@ from app.domain.repositories.repetition_repository import RepetitionRepository
 )
 class SQLAlchemyRepetitionRepository(RepetitionRepository):
     session: AsyncSession
+    services = RepetitionServices()
 
     async def get_all_repetitions(
         self,
@@ -47,13 +53,16 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
         pass
 
     async def create_repetition(
-        title,
-        user_id,
-        description=None,
-        document_link=None,
-        slug=None,
+        self,
+        type_repetition: RepetitionContentTypeEnum,
+        **kwargs,
     ):
-        pass
+        repetition: RepetitionAggragetion = await self.services.create_repetition(
+            type_repetition=type_repetition,
+            **kwargs,
+        )
+
+        print(repetition)
 
     async def successful_repetition(id):
         pass

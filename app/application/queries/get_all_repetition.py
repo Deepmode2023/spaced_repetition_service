@@ -3,9 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import app.domain.exceptions as dom_ex
 from app.domain.models import RepetitionAggragetion
 from app.domain.models.type import DateType
-from app.infrastucture.repositories.sqlalchemy_repository import (
-    SQLAlchemyRepetitionRepository,
-)
+from app.infrastucture.repositories.sqlalchemy import SQLAlchemyRepetitionRepository
 
 from ..http.exception import HTTPExceptionResponse
 

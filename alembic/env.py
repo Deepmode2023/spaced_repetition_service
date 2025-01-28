@@ -7,10 +7,11 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 from app.config import config as global_config
 from app.domain.models import (
-    RepetitionAggragetion,
+    Repetition,
     SlugRepetition,
     WordRepetition,
     repetition_slug_association,
+    synonym_association,
 )
 from app.infrastucture.db.base import Base
 

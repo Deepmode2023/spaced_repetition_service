@@ -1,0 +1,45 @@
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domain.models import (
+    LanguageEnum,
+    PartOfSpeachEnum,
+    RepetitionContentTypeEnum,
+    SlugRepetition,
+    Synonym,
+    WordRepetition,
+)
+from app.infrastucture.db.session import get_session
+from app.infrastucture.repositories.sqlalchemy import SQLAlchemyRepetitionRepository
+
+from ..http.exception import HTTPExceptionResponse
+
+
+async def create_word_repetition(
+    user_id: str,
+    word: str,
+    synonyms: list[str],
+    part_of_speech: PartOfSpeachEnum,
+    examples: list[str],
+    possible_options: list[str],
+    context: str,
+    language: LanguageEnum,
+    translate: list[str],
+):
+    try:
+        async with get_session() as session:
+            dao = SQLAlchemyRepetitionRepository(session=session)
+            await dao.create_repetition(
+                type_repetition=RepetitionContentTypeEnum.WORD,
+                user_id=user_id,
+                word=word,
+                synonyms=synonyms,
+                part_of_speech=part_of_speech,
+                examples=examples,
+                possible_options=possible_options,
+                context=context,
+                language=language,
+                translate=translate,
+            )
+
+    except Exception as ex:
+        return HTTPExceptionResponse(exception=ex)

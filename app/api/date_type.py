@@ -4,7 +4,7 @@ import pendulum
 from fastapi import Query
 from pydantic_core import core_schema
 
-from app.domain.models import DateType as Date
+from app.domain.models.type import DateType as Date
 
 DESCRIBE_MESSAGE_TYPE = "You must pass 'integer' equal 10-19 chars or 'string' with correct date format = year-month-day hour:min:sec"
 OPENAPI_DOCS = {

@@ -1,11 +1,15 @@
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, EnumMeta
 
 from .base import BaseException
 
 
-class EnumABC(Enum, ABC):
+class ABCEnumMeta(ABCMeta, EnumMeta):
+    pass
+
+
+class EnumABC(Enum, metaclass=ABCEnumMeta):
     @abstractmethod
     def fields(self):
         pass

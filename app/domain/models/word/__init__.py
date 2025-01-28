@@ -1,4 +1,9 @@
-from .synonym import Synonym
+from .association import synonym_association
 from .word_repetition import LanguageEnum, PartOfSpeachEnum, WordRepetition
 
-__all__ = ["Synonym", "LanguageEnum", "PartOfSpeachEnum", "WordRepetition"]
+__all__ = [
+    "LanguageEnum",
+    "PartOfSpeachEnum",
+    "WordRepetition",
+    "synonym_association",
+]

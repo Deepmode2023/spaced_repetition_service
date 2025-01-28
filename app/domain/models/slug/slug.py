@@ -52,8 +52,10 @@ class SlugRepetition(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     name = Column(String, unique=True)
     repetitions = relationship(
-        "RepetitionBase",
+        "Repetition",
         secondary=repetition_slug_association,
+        primaryjoin="Slug.id == repetition_slug_association.c.slug_id",
+        secondaryjoin="WordRepetition.id == repetition_slug_association.c.word_repetition_id",
         back_populates="slugs",
     )
 

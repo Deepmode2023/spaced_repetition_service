@@ -1,20 +1,16 @@
 from .association import repetition_slug_association
-from .repetition import (
-    RepetitionAggragetion,
-    RepetitionContentTypeEnum,
-    RepetitionStatusEnum,
-)
+from .repetition import Repetition, RepetitionContentTypeEnum, RepetitionStatusEnum
 from .slug.slug import SlugRepetition
-from .word import LanguageEnum, PartOfSpeachEnum, Synonym, WordRepetition
+from .word import LanguageEnum, PartOfSpeachEnum, WordRepetition, synonym_association
 
 __all__ = [
-    "RepetitionAggragetion",
+    "Repetition",
     "SlugRepetition",
     "WordRepetition",
     "RepetitionStatusEnum",
     "RepetitionContentTypeEnum",
     "LanguageEnum",
     "PartOfSpeachEnum",
-    "Synonym",
     "repetition_slug_association",
+    "synonym_association",
 ]

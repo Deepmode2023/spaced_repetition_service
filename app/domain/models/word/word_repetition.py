@@ -3,7 +3,9 @@ from enum import Enum
 from sqlalchemy import ARRAY, Column, String
 from sqlalchemy.orm import relationship
 
-from ..base import RepetitionBase
+from app.infrastucture.db.base import Base
+
+from .association import synonym_association
 
 
 class PartOfSpeachEnum(str, Enum):
@@ -45,14 +47,12 @@ class LanguageEnum(str, Enum):
         return {item.name: item.value for item in cls}
 
 
-class WordRepetition(RepetitionBase):
+class WordRepetition(Base):
     """
-    Represents a word repetition, extending the `RepetitionBase` class with additional fields and functionality
-    specific to vocabulary learning or word management.
-
     Attributes:
         __tablename__ (str): The name of the database table for this model, "word_repetitions".
 
+        word (str): name word
         translate (list of str): A list of translations for the word.
         synonyms (relationship): A relationship to the `Synonym` objects associated with this word.
                                  Managed as a bi-directional relationship via `Synonym.word`.
@@ -71,14 +71,6 @@ class WordRepetition(RepetitionBase):
 
             Returns:
                 dict: A dictionary representation of the `WordRepetition` object with the following keys:
-                      - Fields inherited from `RepetitionBase` (via `super().to_json`):
-                        - `id`: The unique identifier of the repetition.
-                        - `title`: The title of the repetition.
-                        - `slugs`: List of associated slugs.
-                        - `user_id`: The unique identifier of the associated user.
-                        - `count_repetition`: The number of repetitions performed.
-                        - `date_repetition`: The date the repetition was made.
-                        - `date_last_repetition`: The date of the last repetition.
                       - Fields specific to `WordRepetition`:
                         - `translate`: List of translations for the word.
                         - `synonyms`: List of associated synonyms, represented as dictionaries via `Synonym.to_json`.
@@ -89,20 +81,21 @@ class WordRepetition(RepetitionBase):
                         - `possible_options`: Possible alternative translations or variations.
                         - `image_url`: A URL for an associated image.
 
-    Inheritance:
-        Inherits all attributes and methods from `RepetitionBase`.
     """
 
     __tablename__ = "word_repetitions"
-
-    translate = Column(ARRAY(String), nullable=False)
+    id = Column(String(36), primary_key=True)
+    word = Column(String, unique=True, nullable=False)
+    translate = Column(ARRAY(String), nullable=True)
     synonyms = relationship(
-        "Synonym",
-        back_populates="word",
-        cascade="all, delete-orphan",
+        "WordRepetition",
+        secondary=synonym_association,
+        primaryjoin="WordRepetition.id == synonym_association.c.word_id",
+        secondaryjoin="WordRepetition.id == synonym_association.c.synonym_id",
+        backref="related_words",
     )
-    part_of_speech = Column(String(20), nullable=False)
-    examples = Column(ARRAY(String), nullable=False)
+    part_of_speech = Column(String(20), nullable=True)
+    examples = Column(ARRAY(String), nullable=True)
     language = Column(String(30), default=LanguageEnum.ENGLISH_BR)
     context = Column(String, nullable=True)
     possible_options = Column(ARRAY(String), nullable=True)
@@ -110,9 +103,9 @@ class WordRepetition(RepetitionBase):
 
     @property
     def to_json(self):
-        parent_data = super().to_json
 
         return {
+            "word": self.word,
             "translate": self.translate,
             "synonyms": [synonym.to_json for synonym in self.synonyms],
             "part_of_speech": self.part_of_speech,
@@ -121,5 +114,18 @@ class WordRepetition(RepetitionBase):
             "context": self.context,
             "possible_options": self.possible_options,
             "image_url": self.image_url,
-            **parent_data,
         }
+
+    @classmethod
+    def cls_arguments(cls) -> list[str]:
+        return [
+            "word",
+            "translate",
+            "synonyms",
+            "part_of_speach",
+            "examples",
+            "language",
+            "context",
+            "possible_options",
+            "image_url",
+        ]

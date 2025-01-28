@@ -1,13 +1,16 @@
 from enum import Enum
+from typing import Optional
 from uuid import uuid4
 
 import pendulum
 from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 
 from app.infrastucture.db.base import Base
 
 from ..utils import repetition_formula
-from .word.word_repetition import WordRepetition
+from .association import repetition_slug_association
+from .word.word_repetition import LanguageEnum, PartOfSpeachEnum, WordRepetition
 
 
 class RepetitionStatusEnum(str, Enum):
@@ -41,16 +44,25 @@ class RepetitionContentTypeEnum(str, Enum):
         return {item.name: item.value for item in cls}
 
 
-class RepetitionAggragetion(Base):
+class Repetition(Base):
     """
-    RepetitionAggregation
+    Repetition
 
-    The `RepetitionAggregation` class is a database model designed to manage and track repetitions for different types of content, such as words, files, and texts.
+    The `Repetition` class is a database model designed to manage and track repetitions for different types of content, such as words, files, and texts.
     It includes attributes for repetition tracking and methods for retrieving related content and exporting data in JSON format.
 
     Attributes:
         id (String, Primary Key):
             A unique identifier for each repetition instance, generated using `uuid4`.
+
+        user_id (String, nullable=False):
+                The unique identifier of the associated user
+
+        title (String, uniq):
+                The title of the repetition
+
+        slugs (Array[String]):
+                List of associated slugs
 
         content_type (String, Required):
             Specifies the type of content associated with the repetition.
@@ -87,6 +99,9 @@ class RepetitionAggragetion(Base):
             Returns:
                 A dictionary with the following fields:
                     - `id`
+                    - `slugs`
+                    - `title`
+                    - `user_id`
                     - `content_type`
                     - `content_id`
                     - `count_repetition`
@@ -96,7 +111,6 @@ class RepetitionAggragetion(Base):
     """
 
     __tablename__ = "repetitions"
-
     id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     content_type = Column(String, nullable=False)
     content_id = Column(String(36), nullable=False)
@@ -106,6 +120,15 @@ class RepetitionAggragetion(Base):
         nullable=False,
         default=lambda: int(pendulum.now().timestamp()),
     )
+    slugs = relationship(
+        "SlugRepetition",
+        back_populates="repetition",
+        primaryjoin="Repetition.id == repetition_slug_association.c.repetition_id",
+        secondaryjoin="SlugRepetition.id == repetition_slug_association.c.slug_id",
+        secondary=repetition_slug_association,
+    )
+    title = Column(String, nullable=False, unique=True)
+    user_id = Column(String, nullable=False)
     date_last_repetition = Column(Integer, nullable=True)
 
     @property
@@ -158,9 +181,16 @@ class RepetitionAggragetion(Base):
                 - `count_repetition`
                 - `date_repetition`
                 - `date_last_repetition`
+                - `user_id`
+                - `title`
+                - `slugs`
 
             If the associated `content` has a `to_json` method, its data is merged into the dictionary.
         """
+        unpacking_slugs = [
+            slug.to_json() if hasattr(slug, "to_json") else slug for slug in self.slugs
+        ]
+
         data = {
             "id": self.id,
             "content_type": self.content_type,
@@ -168,6 +198,9 @@ class RepetitionAggragetion(Base):
             "count_repetition": self.count_repetition,
             "date_repetition": self.date_repetition,
             "date_last_repetition": self.date_last_repetition,
+            "title": self.title,
+            "slugs": unpacking_slugs,
+            "user_id": self.user_id,
         }
         if hasattr(self.content, "to_json"):
             data.update(self.content.to_json)

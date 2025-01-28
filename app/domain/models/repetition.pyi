@@ -18,8 +18,9 @@ class RepetitionContentTypeEnum(str, Enum):
     def fields(cls): ...
 
 @dataclass(kw_only=True)
-class RepetitionAggragetion:
-    slug: str
+class Repetition:
+    id: str
+    slugs: str
     title: str
     description: Optional[str]
     document_link: Optional[str]
