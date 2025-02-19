@@ -5,7 +5,7 @@ from sqlalchemy import Connection, engine_from_config, pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from app.config import config as global_config
+from app.config import global_config
 from app.domain.models import (
     Repetition,
     SlugRepetition,

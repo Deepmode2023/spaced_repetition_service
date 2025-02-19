@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Optional
 
-from ..models import RepetitionAggragetion
+from ..models import Repetition
 from ..models.type import DateType
 
 
@@ -14,7 +14,7 @@ class RepetitionRepository(ABC):
         end_date: DateType,
         limit: int,
         offset: int,
-    ) -> List[RepetitionAggragetion]:
+    ) -> List[Repetition]:
         """
         Retrieves all repetitions within the specified date range.
 
@@ -25,7 +25,7 @@ class RepetitionRepository(ABC):
             offset (int): Number of repetitions to skip.
 
         Returns:
-            List[RepetitionAggragetion]: A list of repetitions.
+            List[Repetition]: A list of repetitions.
 
         Raises:
             RepetitionAlreadyExistsError: If a repetition with the same title already exists.
@@ -69,7 +69,7 @@ class RepetitionRepository(ABC):
         description: Optional[str] = None,
         document_link: Optional[str] = None,
         slugs: Optional[list[str]] = [],
-    ) -> RepetitionAggragetion:
+    ) -> Repetition:
         """
         Creates a new repetition.
 
@@ -81,7 +81,7 @@ class RepetitionRepository(ABC):
             slug (Optional[list[str]], optional): A unique slug for the repetition. Defaults to None.
 
         Returns:
-            RepetitionAggragetion: The created repetition object.
+            Repetition: The created repetition object.
 
         Raises:
             RepetitionAlreadyExistsError: If a repetition with the same title or slug already exists.

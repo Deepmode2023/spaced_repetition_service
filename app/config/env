@@ -1,0 +1,9 @@
+POSTGRES_USER=postgres
+POSTGRES_DB=spaced_repetition
+POSTGRES_PASSWORD=12057417
+DB_PORT=5433
+DB_HOST=localhost
+MODE=DEV
+AUTH_MARKER=SECRET_MARKER_AUTH
+
+REQUIREMENT_FILE= ./app/config/req/requirements.dev.txt

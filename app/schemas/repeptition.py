@@ -21,3 +21,4 @@ class CreateWordRepetitionRequest(BaseModel):
     context: str
     language: LanguageEnum
     translate: list[str]
+    slugs: list[str]

@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  repetition_service:
+    container_name: repetition
+    build:
+      context: .
+      args:
+        REQUIREMENT_FILE: ${REQUIREMENT_FILE}
+    volumes:
+      - type: bind
+        source: ./app
+        target: /code/app
+    command: "uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    environment:
+      - REQUIREMENT_FILE=$$REQUIREMENT_FILE
+    depends_on:
+      - db
+  db:
+    container_name: db
+    image: postgres:14-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  db:

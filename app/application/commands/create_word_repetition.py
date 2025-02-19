@@ -5,7 +5,6 @@ from app.domain.models import (
     PartOfSpeachEnum,
     RepetitionContentTypeEnum,
     SlugRepetition,
-    Synonym,
     WordRepetition,
 )
 from app.infrastucture.db.session import get_session
@@ -24,6 +23,7 @@ async def create_word_repetition(
     context: str,
     language: LanguageEnum,
     translate: list[str],
+    slugs: list[str],
 ):
     try:
         async with get_session() as session:
@@ -39,6 +39,7 @@ async def create_word_repetition(
                 context=context,
                 language=language,
                 translate=translate,
+                slugs=slugs,
             )
 
     except Exception as ex:

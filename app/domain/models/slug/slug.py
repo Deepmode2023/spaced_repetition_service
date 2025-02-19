@@ -54,8 +54,8 @@ class SlugRepetition(Base):
     repetitions = relationship(
         "Repetition",
         secondary=repetition_slug_association,
-        primaryjoin="Slug.id == repetition_slug_association.c.slug_id",
-        secondaryjoin="WordRepetition.id == repetition_slug_association.c.word_repetition_id",
+        primaryjoin="SlugRepetition.id == repetition_slug_association.c.slug_id",
+        secondaryjoin="Repetition.id == repetition_slug_association.c.repetition_id",
         back_populates="slugs",
     )
 

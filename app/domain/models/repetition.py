@@ -122,7 +122,7 @@ class Repetition(Base):
     )
     slugs = relationship(
         "SlugRepetition",
-        back_populates="repetition",
+        back_populates="repetitions",
         primaryjoin="Repetition.id == repetition_slug_association.c.repetition_id",
         secondaryjoin="SlugRepetition.id == repetition_slug_association.c.slug_id",
         secondary=repetition_slug_association,
