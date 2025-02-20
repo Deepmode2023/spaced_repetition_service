@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-dev_compose := docker-compose --env-file ./app/config/.env
+dev_compose := docker-compose --env-file ./app/config/env
 project_path := $(shell pwd)
 config_dir := $(project_path)/app/config
 req_file_dir := $(config_dir)/req
@@ -11,7 +11,7 @@ success := Ready to use
 
 %.build: %.clean
 	@echo "Using requirements file: $(req_file)"; \
-	$($*_compose) up -d --build
+	$($*_compose) up --build
 
 
 %.update_env:
@@ -19,15 +19,15 @@ success := Ready to use
 		echo "Файл .env не найден. Создаём..."; \
 		touch "$(config_dir)/.env"; \
 	fi; \
-	if grep -q '^REQUIREMENT_FILE=' "$(config_dir)/.env"; then \
+	if grep -q '^REQUIREMENT_FILE=' "$(config_dir)/env"; then \
 		if sed --version >/dev/null 2>&1; then \
-			sed -i 's|^REQUIREMENT_FILE=.*|REQUIREMENT_FILE=$(req_file)|' "$(config_dir)/.env"; \
+			sed -i 's|^REQUIREMENT_FILE=.*|REQUIREMENT_FILE=$(req_file)|' "$(config_dir)/env"; \
 		else \
-			sed -i '' 's|^REQUIREMENT_FILE=.*|REQUIREMENT_FILE=$(req_file)|' "$(config_dir)/.env"; \
+			sed -i '' 's|^REQUIREMENT_FILE=.*|REQUIREMENT_FILE=$(req_file)|' "$(config_dir)/env"; \
 		fi; \
 	else \
 		echo "Добавляем REQUIREMENT_FILE=$(req_file)"; \
-		printf "\nREQUIREMENT_FILE=%s\n" "$(req_file)" >> "$(config_dir)/.env"; \
+		printf "\nREQUIREMENT_FILE=%s\n" "$(req_file)" >> "$(config_dir)/env"; \
 	fi
 
 %.clean: %.update_env

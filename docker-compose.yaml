@@ -17,12 +17,13 @@ services:
     environment:
       - REQUIREMENT_FILE=$$REQUIREMENT_FILE
     depends_on:
-      - db
+      alembic:
+        condition: service_completed_successfully
   db:
     container_name: db
     image: postgres:14-alpine
     ports:
-      - 5432:5432
+      - "5432:5432"
     volumes:
       - db:/var/lib/postgresql/data
     environment:
@@ -34,6 +35,26 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+  alembic:
+    build:
+      context: .
+      args:
+        REQUIREMENT_FILE: ${REQUIREMENT_FILE}
+    container_name: alembic_migrations
+    depends_on:
+      - db
+    entrypoint:
+      [
+        "/bin/sh",
+        "-c",
+        "DB_HOST=${DB_HOST} POSTGRES_DB=${POSTGRES_DB} POSTGRES_USER=${POSTGRES_USER} POSTGRES_PASSWORD=${POSTGRES_PASSWORD} sh ./app/config/bash/alembic.sh",
+      ]
+    environment:
+      - REQUIREMENT_FILE=$$REQUIREMENT_FILE
+      - POSTGRES_DB=$$POSTGRES_DB
+      - POSTGRES_USER=$$POSTGRES_USER
+      - POSTGRES_PASSWORD=$$POSTGRES_PASSWORD
+      - DB_HOST=$$DB_HOST
 
 volumes:
   db:
