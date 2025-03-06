@@ -9,6 +9,7 @@ from app.domain.models import (
     Repetition,
     RepetitionContentTypeEnum,
     RepetitionStatusEnum,
+    WordRepetition,
 )
 from app.domain.models.type import DateType
 from app.domain.repositories.repetition import RepetitionRepository
@@ -31,16 +32,19 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
         limit: int,
         offset: int,
     ) -> List[Repetition]:
-        stmt = (
+
+        stmp = (
             select(Repetition)
             .where(
-                Repetition.date_repetition >= start_date.timestamp,
-                Repetition.date_repetition <= end_date.timestamp,
+                Repetition.date_repetition.between(
+                    start_date.timestamp, end_date.timestamp
+                )
             )
             .limit(limit)
             .offset(offset)
         )
-        result: ChunkedIteratorResult = await self.session.execute(stmt)
+        result: ChunkedIteratorResult = await self.session.execute(stmp)
+
         return result.scalars().all()
 
     async def update_repetition(
@@ -54,15 +58,39 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
 
     async def create_repetition(
         self,
-        type_repetition: RepetitionContentTypeEnum,
+        content_type: RepetitionContentTypeEnum,
+        title: str,
+        user_id: str,
+        slugs: list[str],
         **kwargs,
     ):
-        repetition: Repetition = await self.services.create_repetition(
-            type_repetition=type_repetition,
-            **kwargs,
-        )
+        try:
+            dependency_repetition_model = (
+                self.services.create_dependency_repetition_model(
+                    content_type=content_type,
+                    **kwargs,
+                )
+            )
 
-        print(repetition)
+            self.session.add(dependency_repetition_model)
+            await self.session.flush()
+
+            repetition_model: Repetition = self.services.create_repetition_model(
+                content_type=content_type,
+                title=title,
+                dependency_repetition=dependency_repetition_model,
+                user_id=user_id,
+                slugs=slugs,
+            )
+
+            self.session.add(repetition_model)
+            await self.session.flush()
+
+            await self.session.commit()
+
+            return repetition_model
+        except Exception as ex:
+            print(ex)
 
     async def successful_repetition(id):
         pass

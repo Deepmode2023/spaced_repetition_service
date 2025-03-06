@@ -41,3 +41,15 @@ class WordRepetition:
     def to_json(self) -> dict[str, any]: ...
     @classmethod
     def cls_arguments(cls) -> list[str]: ...
+
+class WordRepetitionSchema:
+    id: str
+    word: str
+    translate: str
+    synonyms: list["WordRepetitionSchema"]
+    part_of_speech: PartOfSpeachEnum
+    examples: list[str]
+    language: LanguageEnum
+    context: str
+    possible_options: list[str]
+    image_url: str

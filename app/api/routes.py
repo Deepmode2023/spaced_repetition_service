@@ -9,6 +9,7 @@ from app.schemas.repeptition import (
     CreateFileRepetitionRequest,
     CreateWordRepetitionRequest,
 )
+from app.schemas.response import RepetitionSchemaResponse
 
 from .date_type import OptionalQueryDateType, RequiredQueryDateType
 from .dependencies import auth_marker, session
@@ -37,11 +38,14 @@ async def get_repetition(
     )
 
 
-@with_auth_repetition_route.post("/create_repetition/word")
+@with_auth_repetition_route.post(
+    "/create_repetition/word",
+    response_model=RepetitionSchemaResponse,
+)
 async def create_word(
     request: CreateWordRepetitionRequest,
 ):
-    return await create_word_repetition(**request.model_dump())
+    created_repetition = await create_word_repetition(**request.model_dump())
 
 
 @with_auth_repetition_route.post("/create_repetition/file")

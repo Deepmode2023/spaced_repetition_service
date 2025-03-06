@@ -1,14 +1,17 @@
 from enum import Enum
 
-from sqlalchemy import ARRAY, Column, String
+from sqlalchemy import ARRAY, Column, String, Enum as SQLEnum
 from sqlalchemy.orm import relationship
+from uuid import uuid4
 
 from app.infrastucture.db.base import Base
+from pydantic import BaseModel
+from ..enum import EnumABC
 
 from .association import synonym_association
 
 
-class PartOfSpeachEnum(str, Enum):
+class PartOfSpeachEnum(EnumABC):
     NOUN = "NOUN"
     PRONOUN = "PRONOUN"
     VERB = "VERB"
@@ -28,8 +31,12 @@ class PartOfSpeachEnum(str, Enum):
         """
         return {item.name: item.value for item in cls}
 
+    @property
+    def get_name(self):
+        return "partofspeachenum"
 
-class LanguageEnum(str, Enum):
+
+class LanguageEnum(EnumABC):
     ENGLISH_US = "en-US"
     ENGLISH_BR = "en_GB"
     SPANISH = "es"
@@ -46,12 +53,16 @@ class LanguageEnum(str, Enum):
         """
         return {item.name: item.value for item in cls}
 
+    @property
+    def get_name(self):
+        return "languageenum"
+
 
 class WordRepetition(Base):
     """
     Attributes:
         __tablename__ (str): The name of the database table for this model, "word_repetitions".
-
+        id (str): iditeficator
         word (str): name word
         translate (list of str): A list of translations for the word.
         synonyms (relationship): A relationship to the `Synonym` objects associated with this word.
@@ -84,7 +95,7 @@ class WordRepetition(Base):
     """
 
     __tablename__ = "word_repetitions"
-    id = Column(String(36), primary_key=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     word = Column(String, unique=True, nullable=False)
     translate = Column(ARRAY(String), nullable=True)
     synonyms = relationship(
@@ -94,9 +105,25 @@ class WordRepetition(Base):
         secondaryjoin="WordRepetition.id == synonym_association.c.synonym_id",
         backref="related_words",
     )
-    part_of_speech = Column(String(20), nullable=True)
+    part_of_speech = Column(
+        SQLEnum(
+            PartOfSpeachEnum,
+            name="partofspeachenum",
+            create_type=False,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=True,
+    )
     examples = Column(ARRAY(String), nullable=True)
-    language = Column(String(30), default=LanguageEnum.ENGLISH_BR)
+    language = Column(
+        SQLEnum(
+            LanguageEnum,
+            name="languageenum",
+            create_type=False,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        default=LanguageEnum.ENGLISH_BR,
+    )
     context = Column(String, nullable=True)
     possible_options = Column(ARRAY(String), nullable=True)
     image_url = Column(String, nullable=True)
@@ -106,8 +133,8 @@ class WordRepetition(Base):
 
     @property
     def to_json(self):
-
         return {
+            "id": self.id,
             "word": self.word,
             "translate": self.translate,
             "synonyms": [synonym.to_json for synonym in self.synonyms],
@@ -132,3 +159,16 @@ class WordRepetition(Base):
             "possible_options",
             "image_url",
         ]
+
+
+class WordRepetitionSchema(BaseModel):
+    id: str
+    word: str
+    translate: str
+    synonyms: list["WordRepetitionSchema"]
+    part_of_speech: PartOfSpeachEnum
+    examples: list[str]
+    language: LanguageEnum
+    context: str
+    possible_options: list[str]
+    image_url: str

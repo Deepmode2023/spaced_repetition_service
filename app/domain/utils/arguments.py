@@ -1,10 +1,10 @@
 from typing import Optional
 
-from ..base import BaseException
+from ..exceptions.base import BaseExceptionInternal
 
 
-class SieveValueErrorException(BaseException):
-    status: int = 409
+class SieveValueErrorException(BaseExceptionInternal):
+    message: str
 
     def get_message(self):
         return self.message
@@ -57,7 +57,7 @@ def args_sieve(
     if isinstance(args, list) or isinstance(args, tuple):
         return [arg for arg in args if arg is not None]
 
-    raise SieveValueErrorException("args must be a list or tuple.")
+    raise SieveValueErrorException(message="args must be a list or tuple.")
 
 
 def handle_arguments(

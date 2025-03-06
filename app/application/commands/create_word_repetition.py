@@ -4,6 +4,7 @@ from app.domain.models import (
     LanguageEnum,
     PartOfSpeachEnum,
     RepetitionContentTypeEnum,
+    Repetition,
     SlugRepetition,
     WordRepetition,
 )
@@ -24,12 +25,14 @@ async def create_word_repetition(
     language: LanguageEnum,
     translate: list[str],
     slugs: list[str],
+    title: str,
 ):
     try:
         async with get_session() as session:
             dao = SQLAlchemyRepetitionRepository(session=session)
-            await dao.create_repetition(
-                type_repetition=RepetitionContentTypeEnum.WORD,
+            repetition: Repetition = await dao.create_repetition(
+                title=title,
+                content_type=RepetitionContentTypeEnum.WORD,
                 user_id=user_id,
                 word=word,
                 synonyms=synonyms,
@@ -41,6 +44,7 @@ async def create_word_repetition(
                 translate=translate,
                 slugs=slugs,
             )
+            return repetition
 
     except Exception as ex:
         return HTTPExceptionResponse(exception=ex)

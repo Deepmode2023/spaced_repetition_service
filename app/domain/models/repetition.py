@@ -1,21 +1,28 @@
 from enum import Enum
-from typing import Optional
+from typing import Annotated, Union
+
 from uuid import uuid4
 
 import pendulum
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 
+from pydantic import BaseModel, Field
+from .word.word_repetition import WordRepetitionSchema
+
 from app.infrastucture.db.base import Base
+from .enum import EnumABC
 
 from ..utils import repetition_formula
 from .association import repetition_slug_association
 from .word.word_repetition import LanguageEnum, PartOfSpeachEnum, WordRepetition
+from ..exceptions import UnknownFieldInsideEnum
 
 
-class RepetitionStatusEnum(str, Enum):
+class RepetitionStatusEnum(EnumABC):
     SUCCESSFUL = 1
     UNSUCCESSFUL = 0
+    STARTING = -1
 
     @classmethod
     def fields(cls):
@@ -27,8 +34,12 @@ class RepetitionStatusEnum(str, Enum):
         """
         return {item.name: item.value for item in cls}
 
+    @property
+    def get_name(self):
+        return "repetitionstatusenum"
 
-class RepetitionContentTypeEnum(str, Enum):
+
+class RepetitionContentTypeEnum(EnumABC):
     FILE = "file"
     WORD = "word"
     TEXT = "text"
@@ -42,6 +53,10 @@ class RepetitionContentTypeEnum(str, Enum):
             dict: A dictionary with enum names as keys and values as enum values.
         """
         return {item.name: item.value for item in cls}
+
+    @property
+    def get_name(self):
+        return "repetitioncontenttypeenum"
 
 
 class Repetition(Base):
@@ -76,7 +91,7 @@ class Repetition(Base):
 
         date_repetition (Integer, Required):
             A timestamp representing the next scheduled repetition.
-            Defaults to the current timestamp using `pendulum.now().timestamp()`.
+            Defaults to the current timestamp using `calc_date_repetition`.
 
         date_last_repetition (Integer, Optional):
             A timestamp for the last repetition of the content, or `None` if no repetition has occurred yet.
@@ -112,13 +127,21 @@ class Repetition(Base):
 
     __tablename__ = "repetitions"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
-    content_type = Column(String, nullable=False)
+    content_type = Column(
+        SQLEnum(
+            RepetitionContentTypeEnum,
+            name="contenttypeenum",
+            create_type=False,
+            values_callable=lambda enum_cls: [member.value for member in enum_cls],
+        ),
+        nullable=False,
+    )
     content_id = Column(String(36), nullable=False)
     count_repetition = Column(Integer, default=0)
     date_repetition = Column(
         Integer,
         nullable=False,
-        default=lambda: int(pendulum.now().timestamp()),
+        default=lambda: calc_date_repetition(),
     )
     slugs = relationship(
         "SlugRepetition",
@@ -145,7 +168,7 @@ class Repetition(Base):
             - If `content_type == FILE` or `TEXT`: Returns `None`.
 
         Raises:
-            UnknownFieldInsideEnum: Raised if the `content_type` is not recognized in
+            UnknownFieldInsideEnuRepetitionContentTypeEnumm: Raised if the `content_type` is not recognized in
             `RepetitionContentTypeEnum`.
         """
         from ..exceptions import UnknownFieldInsideEnum
@@ -161,9 +184,11 @@ class Repetition(Base):
             return content_fetcher[self.content_type]()
         except KeyError:
             raise UnknownFieldInsideEnum(
-                message=f"Unknown content_type: {self.content_type}",
                 enum=RepetitionContentTypeEnum,
             )
+
+    def __repr__(self):
+        return f"Repetition(content_type={self.content_type}, title={self.title}, day_repetition={self.date_repetition}"
 
     @property
     def to_json(self):
@@ -188,7 +213,7 @@ class Repetition(Base):
             If the associated `content` has a `to_json` method, its data is merged into the dictionary.
         """
         unpacking_slugs = [
-            slug.to_json() if hasattr(slug, "to_json") else slug for slug in self.slugs
+            slug.to_json if hasattr(slug, "to_json") else slug for slug in self.slugs
         ]
 
         data = {
@@ -203,11 +228,11 @@ class Repetition(Base):
             "user_id": self.user_id,
         }
         if hasattr(self.content, "to_json"):
-            data.update(self.content.to_json)
+            data.update({"deps_model": self.content.to_json})
 
         return data
 
-    async def __update_repetition_schedule(
+    def update_repetition_schedule(
         self,
         repetition_status: RepetitionStatusEnum,
     ):
@@ -236,7 +261,7 @@ class Repetition(Base):
                 - Subtracts the calculated time if unsuccessful.
         """
         if repetition_status not in RepetitionStatusEnum:
-            raise ValueError("Invalid repetition_status value.")
+            raise UnknownFieldInsideEnum(enum=RepetitionStatusEnum)
 
         self.date_last_repetition = int(pendulum.now().timestamp())
         self.count_repetition = max(
@@ -247,10 +272,36 @@ class Repetition(Base):
                 else self.count_repetition - 1
             ),
         )
-        repetition_time_in_seconds = repetition_formula(self.count_repetition)
-
-        self.date_repetition = (
-            self.date_repetition + repetition_time_in_seconds
-            if repetition_status == RepetitionStatusEnum.SUCCESSFUL
-            else self.date_repetition - repetition_time_in_seconds
+        self.date_repetition = calc_date_repetition(
+            count_repetition=self.count_repetition,
+            repetition_status=repetition_status,
+            date_repetition=self.date_repetition,
         )
+
+
+def calc_date_repetition(
+    count_repetition: int = 0,
+    repetition_status: RepetitionStatusEnum = RepetitionStatusEnum.STARTING,
+    date_repetition: int = pendulum.now().timestamp(),
+) -> int:
+    repetition_time_in_seconds = repetition_formula(count_repetition)
+    match repetition_status:
+        case RepetitionStatusEnum.STARTING | RepetitionStatusEnum.SUCCESSFUL:
+            return date_repetition + repetition_time_in_seconds
+        case RepetitionStatusEnum.UNSUCCESSFUL:
+            return date_repetition - repetition_time_in_seconds
+        case _:
+            raise UnknownFieldInsideEnum(enum=RepetitionStatusEnum)
+
+
+class RepetitionWordSchema(BaseModel):
+    id: str
+    content_type: RepetitionContentTypeEnum
+    content_id: str
+    count_repetition: int
+    date_repetition: int
+    slugs: int
+    title: str
+    user_id: str
+    date_last_repetition: int
+    deps_model: WordRepetitionSchema

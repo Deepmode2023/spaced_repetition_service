@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.infrastucture.db.session import get_session
 
-import app.domain.exceptions as dom_ex
+import app.domain.exceptions.external as dom_ex
 from app.domain.models import Repetition
 from app.domain.models.type import DateType
 from app.infrastucture.repositories.sqlalchemy import SQLAlchemyRepetitionRepository
@@ -9,7 +10,6 @@ from ..http.exception import HTTPExceptionResponse
 
 
 async def get_all_repetition(
-    session: AsyncSession,
     start_date: DateType,
     end_date: DateType,
     limit: int,
@@ -37,19 +37,21 @@ async def get_all_repetition(
         All other exceptions are also handled via `HTTPExceptionResponse`.
 
     """
-    dao = SQLAlchemyRepetitionRepository(session=session)
+    async with get_session() as session:
+        dao = SQLAlchemyRepetitionRepository(session=session)
 
-    try:
-        scalar_result: list[Repetition] = await dao.get_all_repetitions(
-            start_date=start_date,
-            end_date=end_date,
-            limit=limit,
-            offset=offset,
-        )
-        return [repetition.to_json for repetition in scalar_result]
-    except dom_ex.DatabaseError as de:
-        return HTTPExceptionResponse(exception=de).response
-    except dom_ex.RepetitionNotFoundError as rnfe:
-        return HTTPExceptionResponse(exception=rnfe).response
-    except Exception as ex:
-        return HTTPExceptionResponse(exception=ex).response
+        try:
+            scalar_result: list[Repetition] = await dao.get_all_repetitions(
+                start_date=start_date,
+                end_date=end_date,
+                limit=limit,
+                offset=offset,
+            )
+            print([scalar.to_json for scalar in scalar_result])
+            return []
+        except dom_ex.DatabaseError as de:
+            return HTTPExceptionResponse(exception=de).response
+        except dom_ex.RepetitionNotFoundError as rnfe:
+            return HTTPExceptionResponse(exception=rnfe).response
+        except Exception as ex:
+            return HTTPExceptionResponse(exception=ex).response
