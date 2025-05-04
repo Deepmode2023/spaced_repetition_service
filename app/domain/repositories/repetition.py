@@ -1,8 +1,14 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Union
 
-from ..models import Repetition
+from ..models import (
+    Repetition,
+    WordRepetition,
+    RepetitionContentTypeEnum,
+    PartOfSpeachEnum,
+    LanguageEnum,
+)
 from ..models.type import DateType
 
 
@@ -14,24 +20,7 @@ class RepetitionRepository(ABC):
         end_date: DateType,
         limit: int,
         offset: int,
-    ) -> List[Repetition]:
-        """
-        Retrieves all repetitions within the specified date range.
-
-        Args:
-            start_date (DateType): The start of the date range.
-            end_date (DateType): The end of the date range.
-            limit (int): Maximum number of repetitions to return.
-            offset (int): Number of repetitions to skip.
-
-        Returns:
-            List[Repetition]: A list of repetitions.
-
-        Raises:
-            RepetitionAlreadyExistsError: If a repetition with the same title already exists.
-            SomeOtherError: If another error occurs.
-        """
-        ...
+    ) -> List[Repetition]: ...
 
     @abstractmethod
     async def update_repetition(
@@ -40,86 +29,28 @@ class RepetitionRepository(ABC):
         description: Optional[str] = None,
         document_link: Optional[str] = None,
         slugs: Optional[list[str]] = [],
-    ) -> bool:
-        """
-        Updates an existing repetition with the provided data.
-
-        Args:
-            repetition_id (str): The ID of the user who owns the repetition.
-            title (Optional[str], optional): The new title for the repetition. Defaults to None.
-            description (Optional[str], optional): The new description for the repetition. Defaults to None.
-            document_link (Optional[str], optional): The new document link for the repetition. Defaults to None.
-            slug (Optional[list[str]], optional): The new slug for the repetition. Defaults to None.
-
-        Returns:
-            bool: True if the update was successful, False otherwise.
-
-        Raises:
-            RepetitionNotFoundError: If the repetition to be updated does not exist.
-            RepetitionAlreadyExistsError: If the new title or slug conflicts with an existing repetition.
-            ValidationError: If the provided data is invalid.
-            DatabaseError: If there is an issue interacting with the database.
-        """
-        ...
+    ) -> bool: ...
 
     @abstractmethod
     async def create_repetition(
         title: str,
         user_id: str,
+        content_type: RepetitionContentTypeEnum,
         description: Optional[str] = None,
         document_link: Optional[str] = None,
         slugs: Optional[list[str]] = [],
-    ) -> Repetition:
-        """
-        Creates a new repetition.
-
-        Args:
-            title (str): The title of the repetition.
-            user_id (str): The ID of the user creating the repetition.
-            description (Optional[str], optional): A description of the repetition. Defaults to None.
-            document_link (Optional[str], optional): A link to a related document. Defaults to None.
-            slug (Optional[list[str]], optional): A unique slug for the repetition. Defaults to None.
-
-        Returns:
-            Repetition: The created repetition object.
-
-        Raises:
-            RepetitionAlreadyExistsError: If a repetition with the same title or slug already exists.
-            DatabaseError: If there is an issue interacting with the database.
-            ValidationError: If the input data does not meet the required criteria.
-        """
-        ...
+        word: Optional[str] = None,
+        translate: Optional[list[str]] = None,
+        synonyms: Optional[list[str]] = None,
+        part_of_speech: Optional[PartOfSpeachEnum] = None,
+        examples: Optional[list[str]] = None,
+        language: Optional[LanguageEnum] = None,
+        context: Optional[str] = None,
+        possible_options: Optional[list[str]] = None,
+    ) -> WordRepetition: ...
 
     @abstractmethod
-    async def successful_repetition(repetition_id: str) -> bool:
-        """
-        Marks a repetition as successful.
-
-        Args:
-            repetition_id (str): The unique identifier of the repetition to mark as successful.
-
-        Returns:
-            bool: True if the operation was successful, False otherwise.
-
-        Raises:
-            RepetitionNotFoundError: If the repetition with the given ID does not exist.
-            DatabaseError: If there is an issue interacting with the database.
-        """
-        ...
+    async def successful_repetition(repetition_id: str) -> bool: ...
 
     @abstractmethod
-    async def unsuccessful_repetition(repetition_id: str) -> bool:
-        """
-        Marks a repetition as unsuccessful.
-
-        Args:
-            repetition_id (str): The unique identifier of the repetition to mark as unsuccessful.
-
-        Returns:
-            bool: True if the operation was successful, False otherwise.
-
-        Raises:
-            RepetitionNotFoundError: If the repetition with the given ID does not exist.
-            DatabaseError: If there is an issue interacting with the database.
-        """
-        ...
+    async def unsuccessful_repetition(repetition_id: str) -> bool: ...

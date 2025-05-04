@@ -2,10 +2,10 @@ import asyncio
 
 from fastapi import HTTPException
 
-from app.domain.exceptions.base import BaseException
+from app.domain.exceptions.base import BaseExceptionExternal
 
 
-class BaseExceptionUnknown(BaseException):
+class BaseExceptionUnknown(BaseExceptionExternal):
     def __init__(self, ex: Exception):
         self.status = 400
         self.details = ex
@@ -15,15 +15,15 @@ class BaseExceptionUnknown(BaseException):
 
 
 class HTTPExceptionResponse:
-    exception: BaseException
+    exception: BaseExceptionExternal
 
-    def __init__(self, exception: BaseException | Exception):
+    def __init__(self, exception: BaseExceptionExternal | Exception):
         self.exception = self._validate_exception(exception=exception)
         asyncio.gather(self.__dispatch_logs())
 
     def _validate_exception(
-        self, exception: BaseException | Exception
-    ) -> BaseException:
+        self, exception: BaseExceptionExternal | Exception
+    ) -> BaseExceptionExternal:
         """
         Checks for and initializes an exception. If the exception does not have
         required attributes, creates a basic exception with default values.

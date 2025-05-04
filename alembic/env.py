@@ -11,7 +11,6 @@ from app.domain.models import (
     SlugRepetition,
     WordRepetition,
     repetition_slug_association,
-    synonym_association,
 )
 from app.infrastucture.db.base import Base
 

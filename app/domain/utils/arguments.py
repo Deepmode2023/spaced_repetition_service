@@ -1,42 +1,55 @@
 from typing import Optional
+from dataclasses import dataclass
+from ..exceptions.base import BaseExceptionExternal, BaseExceptionInternal
+from app.infrastucture.db.base import ClassArgument
 
-from ..exceptions.base import BaseExceptionInternal
+
+@dataclass
+class SieveValueErrorExceptionExternal(BaseExceptionExternal):
+    mandatory_fields: list[str]
+    status = 409
+
+    def get_message(self):
+        return f"Need to pass the mandatory fields={', '.join(self.mandatory_fields)}"
 
 
-class SieveValueErrorException(BaseExceptionInternal):
+@dataclass
+class SieveValueErrorExceptionInternal(BaseExceptionInternal):
     message: str
 
     def get_message(self):
         return self.message
 
 
-def white_list_check_expression(white_list_keys: list[str], key: any) -> bool:
-    return key in white_list_keys if len(white_list_keys) > 0 else True
+def validate_mandatory_field(field: str, kwargs: dict):
+    if field not in kwargs:
+        raise SieveValueErrorExceptionExternal(mandatory_fields=[field])
 
 
-def kwargs_sieve(
-    kwargs: dict[any, any] = [],
-    white_list_keys: Optional[list[str]] = [],
-) -> dict[any, any]:
-    """
-    Filters keyword arguments, excluding keys that are `None`, unless included in a whitelist.
+def process_field(field: str, kwargs: dict, acc: dict):
+    if field in kwargs and kwargs[field] is not None:
+        acc[field] = kwargs[field]
 
-    Args:
-        white_list_key (List[str]): Keys to always include, even if `None`. Default is an empty list.
-        **kwargs: Arbitrary keyword arguments to filter.
 
-    Returns:
-        Dict[Any, Any]: A filtered dictionary.
-    """
-    if not isinstance(kwargs, dict):
-        raise SieveValueErrorException(message="kwargs must be a dictionary.")
+def seive_kwargs_by_white_list(
+    white_list: list[ClassArgument],
+    kwargs: dict[str, any] = None,
+    acc: dict[str, any] = None,
+) -> dict[str, any]:
+    kwargs = kwargs or {}
+    acc = acc or {}
 
-    return {
-        key: value
-        for key, value in kwargs.items()
-        if key is not None
-        and white_list_check_expression(white_list_keys=white_list_keys, key=key)
-    }
+    if not isinstance(white_list, list) or any(
+        not isinstance(item, ClassArgument) for item in white_list
+    ):
+        raise TypeError("white_list must contain the list[ClassArgument] type")
+
+    for field, nullable in white_list:
+        if not nullable:
+            validate_mandatory_field(field, kwargs)
+        process_field(field, kwargs, acc)
+
+    return acc
 
 
 def args_sieve(
@@ -57,7 +70,7 @@ def args_sieve(
     if isinstance(args, list) or isinstance(args, tuple):
         return [arg for arg in args if arg is not None]
 
-    raise SieveValueErrorException(message="args must be a list or tuple.")
+    raise SieveValueErrorExceptionInternal(message="args must be a list or tuple.")
 
 
 def handle_arguments(
@@ -67,5 +80,5 @@ def handle_arguments(
 ) -> list[list[any], dict[any, any]]:
     return (
         args_sieve(args),
-        kwargs_sieve(kwargs, white_list_keys=white_list_keys),
+        seive_kwargs_by_white_list(kwargs=kwargs, white_list=white_list_keys),
     )

@@ -1,5 +1,5 @@
-from typing import TypeVar, Generic, Union, Annotated
-from app.domain.models import RepetitionWordSchema
+from typing import TypeVar, Generic, Union, Annotated, List
+from app.domain.models import WordRepetitionSchema
 from pydantic import BaseModel
 
 T = TypeVar("T")
@@ -8,10 +8,13 @@ T = TypeVar("T")
 class TotalResponse(BaseModel, Generic[T]):
     status: int
     details: str
-    model: T
+    model: T | List
 
 
 RepetitionSchemaResponse = Annotated[
-    Union[TotalResponse[RepetitionWordSchema], TotalResponse[RepetitionWordSchema]],
+    Union[
+        TotalResponse[WordRepetitionSchema],
+        TotalResponse[WordRepetitionSchema],
+    ],
     "RepetitionSchema",
 ]

@@ -7,7 +7,7 @@ dev_req = $(config_dir)/req/requirements.$*.txt
 success := Ready to use
 
 dev:
-	$(dev_compose) up -d 
+	$(dev_compose) up
 
 %.build: %.clean
 	@echo "Using requirements file: $($*_req)"; \

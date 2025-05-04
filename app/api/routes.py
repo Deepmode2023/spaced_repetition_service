@@ -10,6 +10,7 @@ from app.schemas.repeptition import (
     CreateWordRepetitionRequest,
 )
 from app.schemas.response import RepetitionSchemaResponse
+from app.application.http.exception import HTTPExceptionResponse
 
 from .date_type import OptionalQueryDateType, RequiredQueryDateType
 from .dependencies import auth_marker, session
@@ -23,19 +24,28 @@ with_auth_repetition_route = APIRouter(
 repetition_route = APIRouter(prefix="/repetition", tags=["Repetition"])
 
 
-@repetition_route.get("/")
+@repetition_route.get("/", response_model=RepetitionSchemaResponse)
 async def get_repetition(
     start_date: OptionalQueryDateType,
     end_date: RequiredQueryDateType,
     limit: Optional[int] = 50,
     offset: Optional[int] = 0,
 ):
-    return await get_all_repetition(
-        start_date=start_date,
-        end_date=end_date,
-        limit=limit,
-        offset=offset,
-    )
+    try:
+        repetitions = await get_all_repetition(
+            start_date=start_date,
+            end_date=end_date,
+            limit=limit,
+            offset=offset,
+        )
+        print(">>>>>>>>>>>>>>>", repetitions)
+        return RepetitionSchemaResponse(
+            status=200,
+            details="Successfull",
+            model=repetitions.to_json if hasattr(repetitions, "to_json") else [],
+        )
+    except Exception as e:
+        return HTTPExceptionResponse(e).response
 
 
 @with_auth_repetition_route.post(
@@ -45,7 +55,16 @@ async def get_repetition(
 async def create_word(
     request: CreateWordRepetitionRequest,
 ):
-    created_repetition = await create_word_repetition(**request.model_dump())
+    try:
+        created_repetition = await create_word_repetition(**request.model_dump())
+
+        return RepetitionSchemaResponse(
+            status=200,
+            details="Successfull",
+            model=created_repetition.to_json,
+        )
+    except Exception as e:
+        return HTTPExceptionResponse(e).response
 
 
 @with_auth_repetition_route.post("/create_repetition/file")

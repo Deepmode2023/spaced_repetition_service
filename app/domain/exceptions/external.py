@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from .base import BaseExceptionExternal
-from ..models.enum import EnumABC
+from app.domain.models.enum import EnumABC
 
 
 @dataclass

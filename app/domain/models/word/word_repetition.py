@@ -1,14 +1,9 @@
-from enum import Enum
+from sqlalchemy import ARRAY, Column, String, Enum as SQLEnum, ForeignKeyConstraint
 
-from sqlalchemy import ARRAY, Column, String, Enum as SQLEnum
-from sqlalchemy.orm import relationship
-from uuid import uuid4
-
-from app.infrastucture.db.base import Base
 from pydantic import BaseModel
 from ..enum import EnumABC
-
-from .association import synonym_association
+from app.domain.models.repetition import Repetition, RepetitionSchema
+from app.infrastucture.db.base import ClassArgument
 
 
 class PartOfSpeachEnum(EnumABC):
@@ -31,17 +26,18 @@ class PartOfSpeachEnum(EnumABC):
         """
         return {item.name: item.value for item in cls}
 
-    @property
+    @classmethod
     def get_name(self):
         return "partofspeachenum"
 
 
 class LanguageEnum(EnumABC):
-    ENGLISH_US = "en-US"
-    ENGLISH_BR = "en_GB"
-    SPANISH = "es"
-    FRENCH = "fr"
-    GERMANY = "de"
+    ENGLISH_US = "EN-US"
+    ENGLISH_BR = "EN_GB"
+    SPANISH = "ES"
+    FRENCH = "FR"
+    GERMANY = "DE"
+    POLAND = "PL"
 
     @classmethod
     def fields(cls):
@@ -53,12 +49,14 @@ class LanguageEnum(EnumABC):
         """
         return {item.name: item.value for item in cls}
 
-    @property
+    @classmethod
     def get_name(self):
         return "languageenum"
 
 
-class WordRepetition(Base):
+class WordRepetition(Repetition):
+    from app.domain.models.repetition import RepetitionContentTypeEnum
+
     """
     Attributes:
         __tablename__ (str): The name of the database table for this model, "word_repetitions".
@@ -95,20 +93,14 @@ class WordRepetition(Base):
     """
 
     __tablename__ = "word_repetitions"
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    id = Column(String(36), primary_key=True)
     word = Column(String, unique=True, nullable=False)
     translate = Column(ARRAY(String), nullable=True)
-    synonyms = relationship(
-        "WordRepetition",
-        secondary=synonym_association,
-        primaryjoin="WordRepetition.id == synonym_association.c.word_id",
-        secondaryjoin="WordRepetition.id == synonym_association.c.synonym_id",
-        backref="related_words",
-    )
+    synonyms = Column(ARRAY(String), nullable=True)
     part_of_speech = Column(
         SQLEnum(
             PartOfSpeachEnum,
-            name="partofspeachenum",
+            name=PartOfSpeachEnum.get_name(),
             create_type=False,
             values_callable=lambda enum_cls: [member.value for member in enum_cls],
         ),
@@ -118,7 +110,7 @@ class WordRepetition(Base):
     language = Column(
         SQLEnum(
             LanguageEnum,
-            name="languageenum",
+            name=LanguageEnum.get_name(),
             create_type=False,
             values_callable=lambda enum_cls: [member.value for member in enum_cls],
         ),
@@ -127,6 +119,16 @@ class WordRepetition(Base):
     context = Column(String, nullable=True)
     possible_options = Column(ARRAY(String), nullable=True)
     image_url = Column(String, nullable=True)
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["id"], ["repetitions.id"], name="fk_word_repetitions_repetition_id"
+        ),
+    )
+
+    __mapper_args__ = {
+        "polymorphic_identity": RepetitionContentTypeEnum.WORD.value,
+    }
 
     def __repr__(self):
         return f"WordRepetition(id={self.id}, word={self.word})"
@@ -137,38 +139,44 @@ class WordRepetition(Base):
             "id": self.id,
             "word": self.word,
             "translate": self.translate,
-            "synonyms": [synonym.to_json for synonym in self.synonyms],
+            "synonyms": self.synonyms,
             "part_of_speech": self.part_of_speech,
             "examples": self.examples,
             "language": self.language,
             "context": self.context,
             "possible_options": self.possible_options,
             "image_url": self.image_url,
+            **super().to_json,
         }
 
     @classmethod
-    def cls_arguments(cls) -> list[str]:
+    def cls_arguments(cls) -> list[ClassArgument]:
         return [
-            "word",
-            "translate",
-            "synonyms",
-            "part_of_speach",
-            "examples",
-            "language",
-            "context",
-            "possible_options",
-            "image_url",
+            ClassArgument(field="word", nullable=False),
+            ClassArgument(field="translate", nullable=True),
+            ClassArgument(field="synonyms", nullable=True),
+            ClassArgument(field="part_of_speech", nullable=True),
+            ClassArgument(field="examples", nullable=True),
+            ClassArgument(field="language", nullable=True),
+            ClassArgument(field="context", nullable=True),
+            ClassArgument(field="possible_options", nullable=True),
+            ClassArgument(field="image_url", nullable=True),
+            *super().cls_arguments(),
         ]
 
 
-class WordRepetitionSchema(BaseModel):
+class WordRepetitionModel(BaseModel):
     id: str
     word: str
     translate: str
-    synonyms: list["WordRepetitionSchema"]
+    synonyms: list[str]
     part_of_speech: PartOfSpeachEnum
     examples: list[str]
     language: LanguageEnum
     context: str
     possible_options: list[str]
     image_url: str
+
+
+class WordRepetitionSchema(RepetitionSchema):
+    pass

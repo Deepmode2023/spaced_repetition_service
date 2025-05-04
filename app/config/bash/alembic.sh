@@ -13,5 +13,6 @@ if ! psql postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$DB_HOST/$POSTGRES_DB -
     echo 'No tables found. Running migrations...';
     alembic upgrade head;
 else
+    alembic upgrade head;
     echo 'Migrations already applied.';
 fi
