@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infrastucture.exceptions.sqlalchemy import DuplicateAddedEntity
 from app.domain.utils import SieveValueErrorExceptionExternal
-from sqlalchemy.orm import with_polymorphic
+from sqlalchemy.orm import with_polymorphic, selectinload
 
 from app.domain.models import (
     Repetition,
@@ -38,6 +38,7 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
         RepetitionPolymorphic = with_polymorphic(Repetition, "*", aliased=True)
         stmp = (
             select(RepetitionPolymorphic)
+            .options(selectinload(RepetitionPolymorphic.slugs))
             .where(
                 RepetitionPolymorphic.date_repetition.between(
                     start_date.timestamp, end_date.timestamp
@@ -46,8 +47,8 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
             .limit(limit)
             .offset(offset)
         )
-        result: ChunkedIteratorResult = await self.session.execute(stmp)
 
+        result: ChunkedIteratorResult = await self.session.execute(stmp)
         return result.scalars().all()
 
     async def update_repetition(

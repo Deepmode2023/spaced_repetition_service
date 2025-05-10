@@ -38,11 +38,10 @@ async def get_repetition(
             limit=limit,
             offset=offset,
         )
-        print(">>>>>>>>>>>>>>>", repetitions)
         return RepetitionSchemaResponse(
             status=200,
             details="Successfull",
-            model=repetitions.to_json if hasattr(repetitions, "to_json") else [],
+            model=repetitions,
         )
     except Exception as e:
         return HTTPExceptionResponse(e).response

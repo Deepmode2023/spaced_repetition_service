@@ -19,4 +19,4 @@ async def get_all_repetition(
             limit=limit,
             offset=offset,
         )
-        return scalar_result
+        return [result.to_json for result in scalar_result]
