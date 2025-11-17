@@ -101,6 +101,9 @@ class WordRepetition(Base):
     possible_options = Column(ARRAY(String), nullable=True)
     image_url = Column(String, nullable=True)
 
+    def __repr__(self):
+        return f"WordRepetition(id={self.id}, word={self.word})"
+
     @property
     def to_json(self):
 

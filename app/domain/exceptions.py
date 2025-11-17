@@ -21,7 +21,7 @@ class RepetitionAlreadyExistsError(BaseException):
     status: 409
 
     def get_message(self) -> str:
-        return f"Repetition '{self.repetition_title}' already exists. {self.message}"
+        return f"Repetition '{self.repetition_title}' already exists. { f"Addiction info: {self.message}" if self.message else ""}"
 
 
 @dataclass(frozen=True)
@@ -30,9 +30,7 @@ class RepetitionNotFoundError(BaseException):
     status: 404
 
     def get_message(self) -> str:
-        return (
-            f"Repetition with ID '{self.repetition_id}' was not found. {self.message}"
-        )
+        return f"Repetition with ID '{self.repetition_id}' was not found. { f"Addiction info: {self.message}" if self.message else ""}"
 
 
 @dataclass(frozen=True)
@@ -42,7 +40,7 @@ class ValidationError(BaseException):
     status: 409
 
     def get_message(self) -> str:
-        return f"Validation error on field '{self.field_name}' with value '{self.field_value}'. {self.message}"
+        return f"Validation error on field '{self.field_name}' with value '{self.field_value}'. { f"Addiction info: {self.message}" if self.message else ""}"
 
 
 @dataclass(frozen=True)
@@ -51,7 +49,7 @@ class DatabaseError(BaseException):
     status: 409
 
     def get_message(self) -> str:
-        return f"Database error occurred during '{self.operation}' operation. {self.message}"
+        return f"Database error occurred during '{self.operation}' operation. { f"Addiction info: {self.message}" if self.message else ""}"
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -60,4 +58,13 @@ class UnknownFieldInsideEnum(BaseException):
     enum: EnumABC
 
     def get_message(self) -> str:
-        return f"Unknown field inside enum {self.enum.__class__.name}. Possible options {self.enum.fields()}. Addiction message: {self.message}"
+        return f"Unknown field inside enum {self.enum.__class__.name}. Possible options {self.enum.fields()}. { f"Addiction info: {self.message}" if self.message else ""}"
+
+
+@dataclass(frozen=True, kw_only=True)
+class DontPassTheMandatoryKey(BaseException):
+    status: int = 409
+    key: str
+
+    def get_message(self):
+        return f"You do not pass the mandatory key [{self.key}]. It is mandatory for the system. { f"Addiction info: {self.message}" if self.message else ""}"

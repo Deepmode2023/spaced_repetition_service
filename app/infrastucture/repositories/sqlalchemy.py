@@ -6,7 +6,7 @@ from sqlalchemy import ChunkedIteratorResult, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.models import (
-    RepetitionAggragetion,
+    Repetition,
     RepetitionContentTypeEnum,
     RepetitionStatusEnum,
 )
@@ -30,12 +30,12 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
         end_date: DateType,
         limit: int,
         offset: int,
-    ) -> List[RepetitionAggragetion]:
+    ) -> List[Repetition]:
         stmt = (
-            select(RepetitionAggragetion)
+            select(Repetition)
             .where(
-                RepetitionAggragetion.date_repetition >= start_date.timestamp,
-                RepetitionAggragetion.date_repetition <= end_date.timestamp,
+                Repetition.date_repetition >= start_date.timestamp,
+                Repetition.date_repetition <= end_date.timestamp,
             )
             .limit(limit)
             .offset(offset)
@@ -49,7 +49,7 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
         description=None,
         document_link=None,
         slug=None,
-    ) -> RepetitionAggragetion:
+    ) -> Repetition:
         pass
 
     async def create_repetition(
@@ -57,7 +57,7 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
         type_repetition: RepetitionContentTypeEnum,
         **kwargs,
     ):
-        repetition: RepetitionAggragetion = await self.services.create_repetition(
+        repetition: Repetition = await self.services.create_repetition(
             type_repetition=type_repetition,
             **kwargs,
         )
