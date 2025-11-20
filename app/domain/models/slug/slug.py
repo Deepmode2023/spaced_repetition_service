@@ -4,8 +4,9 @@ from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
 from app.infrastucture.db.base import Base
-
+from app.infrastucture.db.base import ClassArgument
 from ..association import repetition_slug_association
+from pydantic import BaseModel
 
 
 class SlugRepetition(Base):
@@ -62,9 +63,18 @@ class SlugRepetition(Base):
     def __repr__(self):
         return f"SlugRepetition(id={self.id}, name={self.name})"
 
+    @classmethod
+    def cls_arguments(cls):
+        return [ClassArgument(field="name", nullable=False)]
+
     @property
     def to_json(self):
         return {
             "id": self.id,
             "name": self.name,
         }
+
+
+class SlugRepetitionSchema(BaseModel):
+    id: str
+    name: str

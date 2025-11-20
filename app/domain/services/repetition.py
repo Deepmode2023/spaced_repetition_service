@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from functools import partial
-from typing import Optional
 
 from app.domain.models.repetition import Repetition
 from app.domain.models.slug.slug import SlugRepetition
@@ -41,12 +40,8 @@ class RepetitionServices:
             user_id=user_id,
             word=word,
             synonyms=synonyms,
-            part_of_speech=part_of_speech,
-            examples=examples,
-            possible_options=possible_options,
-            context=context,
-            language=language,
-            translate=translate,
+            title=title,
+            slugs=self._create_slugs(slugs),
         )
         slugs = [SlugRepetition(name=name) for name in kwargs.pop("slugs")]
 

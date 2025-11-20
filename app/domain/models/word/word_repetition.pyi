@@ -1,6 +1,7 @@
 from enum import Enum
+from ..enum import EnumABC
 
-class PartOfSpeachEnum(str, Enum):
+class PartOfSpeachEnum(EnumABC):
     NOUN: str
     PRONOUN: str
     VERB: str
@@ -12,16 +13,21 @@ class PartOfSpeachEnum(str, Enum):
 
     @classmethod
     def fields(cls) -> dict[str, str]: ...
+    @classmethod
+    def get_name(self): ...
 
-class LanguageEnum(str, Enum):
+class LanguageEnum(EnumABC):
     ENGLISH_US: str
     ENGLISH_BR: str
     SPANISH: str
     FRENCH: str
     GERMANY: str
+    POLAND: str
 
     @classmethod
     def fields(cls) -> dict[str, str]: ...
+    @classmethod
+    def get_name(self): ...
 
 class WordRepetition:
     def __init__(
@@ -29,7 +35,7 @@ class WordRepetition:
         id: str,
         word: str,
         translate: str,
-        synonyms: list[WordRepetition],
+        synonyms: list[str],
         part_of_speech: PartOfSpeachEnum,
         examples: list[str],
         language: LanguageEnum,
@@ -41,3 +47,15 @@ class WordRepetition:
     def to_json(self) -> dict[str, any]: ...
     @classmethod
     def cls_arguments(cls) -> list[str]: ...
+
+class WordRepetitionSchema:
+    id: str
+    word: str
+    translate: str
+    synonyms: list[str]
+    part_of_speech: PartOfSpeachEnum
+    examples: list[str]
+    language: LanguageEnum
+    context: str
+    possible_options: list[str]
+    image_url: str

@@ -12,6 +12,7 @@ class CreateFileRepetitionRequest(BaseModel):
 
 
 class CreateWordRepetitionRequest(BaseModel):
+    title: str
     user_id: str
     word: str
     synonyms: list[str]

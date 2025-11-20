@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.config import config
+from app.config import global_config
 from app.infrastucture.db.session import get_session
 
 
@@ -22,7 +22,7 @@ async def auth_marker(auth_marker: Annotated[str, Header()]):
         detail: Detailed error message to return to the client.
     """
 
-    if auth_marker != config.AUTH_MARKER:
+    if auth_marker != global_config.AUTH_MARKER:
         raise HTTPException(
             detail="Access forbidden: Invalid or missing authentication marker.",
             status_code=403,

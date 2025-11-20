@@ -1,9 +1,13 @@
-from .association import synonym_association
-from .word_repetition import LanguageEnum, PartOfSpeachEnum, WordRepetition
+from .word_repetition import (
+    LanguageEnum,
+    PartOfSpeachEnum,
+    WordRepetition,
+    WordRepetitionSchema,
+)
 
 __all__ = [
     "LanguageEnum",
     "PartOfSpeachEnum",
     "WordRepetition",
-    "synonym_association",
+    "WordRepetitionSchema",
 ]

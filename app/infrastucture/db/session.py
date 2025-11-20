@@ -4,10 +4,10 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from app.config import config
+from app.config import global_config
 
 engine = create_async_engine(
-    config.DATABASE_URL_async,
+    global_config.DATABASE_URL_async,
     future=True,
     echo=True,
 )

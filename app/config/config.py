@@ -1,9 +1,10 @@
+import os
 from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Config(BaseSettings):
+class GlobalConfig(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_DB: str
     POSTGRES_PASSWORD: str
@@ -17,11 +18,13 @@ class Config(BaseSettings):
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.POSTGRES_DB}"
 
     model_config = SettingsConfigDict(
-        validate_default=False, env_file=".env", extra="allow"
+        validate_default=False,
+        env_file=f"{os.getcwd()}/app/config/env",
+        extra="allow",
     )
 
-    def get_mode(self):
+    def is_dev(self):
         return True if self.MODE == "DEV" else False
 
 
-config = Config()
+global_config = GlobalConfig()

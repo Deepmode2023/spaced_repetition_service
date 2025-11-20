@@ -1,14 +1,18 @@
 from dataclasses import dataclass
 from typing import List
 
-import pendulum
 from sqlalchemy import ChunkedIteratorResult, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.infrastucture.exceptions.sqlalchemy import DuplicateAddedEntity
+from app.domain.utils import SieveValueErrorExceptionExternal
+from sqlalchemy.orm import with_polymorphic, selectinload
 
 from app.domain.models import (
     Repetition,
     RepetitionContentTypeEnum,
     RepetitionStatusEnum,
+    WordRepetition,
 )
 from app.domain.models.type import DateType
 from app.domain.repositories.repetition import RepetitionRepository
@@ -30,17 +34,21 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
         end_date: DateType,
         limit: int,
         offset: int,
-    ) -> List[Repetition]:
-        stmt = (
-            select(Repetition)
+    ) -> List[WordRepetition]:
+        RepetitionPolymorphic = with_polymorphic(Repetition, "*", aliased=True)
+        stmp = (
+            select(RepetitionPolymorphic)
+            .options(selectinload(RepetitionPolymorphic.slugs))
             .where(
-                Repetition.date_repetition >= start_date.timestamp,
-                Repetition.date_repetition <= end_date.timestamp,
+                RepetitionPolymorphic.date_repetition.between(
+                    start_date.timestamp, end_date.timestamp
+                )
             )
             .limit(limit)
             .offset(offset)
         )
-        result: ChunkedIteratorResult = await self.session.execute(stmt)
+
+        result: ChunkedIteratorResult = await self.session.execute(stmp)
         return result.scalars().all()
 
     async def update_repetition(
@@ -54,15 +62,33 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
 
     async def create_repetition(
         self,
-        type_repetition: RepetitionContentTypeEnum,
+        content_type: RepetitionContentTypeEnum,
         **kwargs,
     ):
-        repetition: Repetition = await self.services.create_repetition(
-            type_repetition=type_repetition,
-            **kwargs,
-        )
+        try:
+            repetition_model = self.services.create_repetition_model(
+                content_type=content_type,
+                **kwargs,
+            )
 
-        print(repetition)
+            self.session.add(repetition_model)
+            await self.session.commit()
+
+            return repetition_model
+
+        except IntegrityError:
+            await self.session.rollback()
+            raise DuplicateAddedEntity(
+                fields=[
+                    *kwargs.keys(),
+                    "title",
+                    "user_id",
+                    "slugs",
+                    "content_type",
+                ]
+            )
+        except SieveValueErrorExceptionExternal:
+            raise
 
     async def successful_repetition(id):
         pass
