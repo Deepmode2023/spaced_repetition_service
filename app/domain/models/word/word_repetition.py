@@ -120,7 +120,7 @@ class WordRepetition(Repetition):
     possible_options = Column(ARRAY(String), nullable=True)
     image_url = Column(String, nullable=True)
 
-    __table_args__ = (
+    table_args__ = (
         ForeignKeyConstraint(
             ["id"], ["repetitions.id"], name="fk_word_repetitions_repetition_id"
         ),

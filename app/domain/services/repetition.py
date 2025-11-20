@@ -4,7 +4,7 @@ from functools import partial
 from app.domain.models.repetition import Repetition
 from app.domain.models.slug.slug import SlugRepetition
 
-from ..exceptions.external import DontPassTheMandatoryKey, UnknownFieldInsideEnum
+from ..exceptions import DontPassTheMandatoryKey
 from ..models import (
     LanguageEnum,
     PartOfSpeachEnum,
@@ -16,41 +16,60 @@ from ..utils import handle_arguments
 
 @dataclass
 class RepetitionServices:
-    def create_repetition_model(
+
+    async def create_repetition(
         self,
-        content_type: RepetitionContentTypeEnum,
-        **kwargs,
-    ) -> WordRepetition:
-        partial_kwargs = partial(handle_arguments, content_type=content_type, **kwargs)
+        type_repetition: RepetitionContentTypeEnum,
+        user_id: str,
+        slugs: list[str],
+        word: Optional[str] = None,
+        synonyms: Optional[list[str]] = None,
+        part_of_speech: Optional[PartOfSpeachEnum] = None,
+        examples: Optional[list[str]] = None,
+        possible_options: Optional[list[str]] = None,
+        context: Optional[str] = None,
+        language: Optional[LanguageEnum] = None,
+        translate: Optional[list[str]] = None,
+    ) -> Repetition:
+        if kwargs.get("slugs", None) is None:
+            raise DontPassTheMandatoryKey(key="slugs")
 
-        if content_type == RepetitionContentTypeEnum.WORD:
-            _, kwargs = partial_kwargs(white_list_keys=WordRepetition.cls_arguments())
-
-            return self._create_word_repetition_model(**kwargs)
-        elif content_type == RepetitionContentTypeEnum.MD:
-            pass
-        elif content_type == RepetitionContentTypeEnum.TEXT:
-            pass
-        else:
-            raise UnknownFieldInsideEnum(
-                message="Unknown Repetition content type in Enum",
-                enum=RepetitionContentTypeEnum,
-            )
-
-    def _create_word_repetition_model(self, slugs, title, **kwargs) -> WordRepetition:
-        if "synonyms" not in kwargs:
-            raise DontPassTheMandatoryKey(key="synonyms")
-        synonyms = kwargs.pop("synonyms")
-
-        return WordRepetition(
-            **kwargs,
+        partial_args = partial(
+            handle_arguments,
+            slugs=slugs,
+            user_id=user_id,
+            word=word,
             synonyms=synonyms,
             title=title,
             slugs=self._create_slugs(slugs),
         )
+        slugs = [SlugRepetition(name=name) for name in kwargs.pop("slugs")]
 
-    def _create_slugs(self, slugs: list[str]) -> list[SlugRepetition]:
-        if not slugs:
-            raise DontPassTheMandatoryKey(key="slugs")
+        match type_repetition:
+            case RepetitionContentTypeEnum.WORD:
+                _, kwargs = partial_args(
+                    white_list_keys=WordRepetition.cls_arguments() + ["slugs"]
+                )
+                word: WordRepetition = await self.__word_handler(**kwargs)
 
-        return [SlugRepetition(name=name) for name in slugs]
+            case RepetitionContentTypeEnum.FILE:
+                pass
+
+            case RepetitionContentTypeEnum.TEXT:
+                pass
+
+            case _:
+                from app.domain.exceptions import UnknownFieldInsideEnum
+
+                raise UnknownFieldInsideEnum(
+                    message="Unknown Repetition content type in Enum",
+                    enum=RepetitionContentTypeEnum,
+                )
+
+    async def __word_handler(self, **kwargs) -> WordRepetition:
+        if kwargs.get("synonyms", None) is None:
+            raise DontPassTheMandatoryKey(key="synonyms")
+
+        synonyms = [WordRepetition(word=word) for word in kwargs.pop("synonyms")]
+
+        return WordRepetition(**kwargs, synonyms=synonyms)
