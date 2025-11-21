@@ -1,7 +1,6 @@
 from typing import Optional
 from dataclasses import dataclass
 from ..exceptions.base import BaseExceptionExternal, BaseExceptionInternal
-from app.infrastucture.db.base import ClassArgument
 
 
 @dataclass
@@ -32,10 +31,12 @@ def process_field(field: str, kwargs: dict, acc: dict):
 
 
 def seive_kwargs_by_white_list(
-    white_list: list[ClassArgument],
+    white_list: list[tuple[str, bool]],
     kwargs: dict[str, any] = None,
     acc: dict[str, any] = None,
 ) -> dict[str, any]:
+    from app.domain.models.base import ClassArgument
+
     kwargs = kwargs or {}
     acc = acc or {}
 

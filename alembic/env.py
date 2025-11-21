@@ -6,10 +6,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 from app.config import global_config
-from app.domain.models import (
-    Repetition,
-    SlugRepetition,
-    WordRepetition,
+from app.infrastucture.db import (
+    RepetitionSQL,
+    SlugRepetitionSQL,
+    WordRepetitionSQL,
     repetition_slug_association,
 )
 from app.infrastucture.db.base import Base

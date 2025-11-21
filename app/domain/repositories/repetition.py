@@ -14,7 +14,7 @@ from ..models.type import DateType
 
 
 @dataclass(eq=False, frozen=True)
-class RepetitionRepository(ABC):
+class IRepetitionRepository(ABC):
     @abstractmethod
     async def get_all_repetitions(
         start_date: DateType,

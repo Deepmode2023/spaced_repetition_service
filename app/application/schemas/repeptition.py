@@ -1,4 +1,4 @@
-from fastapi import File, Form, UploadFile
+from fastapi import File, UploadFile
 from pydantic import BaseModel
 
 from app.domain.models import LanguageEnum, PartOfSpeachEnum

@@ -2,14 +2,20 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.infrastucture.repositories.sqlalchemy import SQLAlchemyRepetitionRepository
 from app.application.commands import create_word_repetition
-from app.application.queries.get_all_repetition import get_all_repetition
-from app.schemas.repeptition import (
+from app.application.queries.get_all_repetition import (
+    GetAllRepetitionHandler,
+    GetAllRepetitionQuery,
+)
+from app.application.schemas.repeptition import (
     CreateFileRepetitionRequest,
     CreateWordRepetitionRequest,
 )
-from app.schemas.response import RepetitionSchemaResponse
+from app.application.schemas.response import (
+    RepetitionSchemaResponse,
+    RepetitionResponse,
+)
 from app.application.http.exception import HTTPExceptionResponse
 
 from .date_type import OptionalQueryDateType, RequiredQueryDateType
@@ -30,19 +36,26 @@ async def get_repetition(
     end_date: RequiredQueryDateType,
     limit: Optional[int] = 50,
     offset: Optional[int] = 0,
+    session: AsyncSession = Depends(session),
 ):
     try:
-        repetitions = await get_all_repetition(
-            start_date=start_date,
-            end_date=end_date,
-            limit=limit,
-            offset=offset,
+        repo = SQLAlchemyRepetitionRepository(session=session)
+        handler = GetAllRepetitionHandler(repo=repo)
+        repetitions = await handler.handle(
+            GetAllRepetitionQuery(
+                start_date,
+                end_date,
+                limit,
+                offset,
+            )
         )
+
         return RepetitionSchemaResponse(
             status=200,
             details="Successfull",
-            model=repetitions,
+            model=[RepetitionResponse.from_domain(rep) for rep in repetitions],
         )
+
     except Exception as e:
         return HTTPExceptionResponse(e).response
 

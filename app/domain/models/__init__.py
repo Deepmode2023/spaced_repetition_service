@@ -2,23 +2,20 @@ from .type.date_type import DateType
 from .repetition import (
     Repetition,
     RepetitionContentTypeEnum,
-    RepetitionSchema,
     RepetitionStatusEnum,
+    calc_date_repetition,
 )
 from .slug.slug import SlugRepetition
-from .word import WordRepetition, WordRepetitionSchema, LanguageEnum, PartOfSpeachEnum
-from .association import repetition_slug_association
+from .word import WordRepetition, LanguageEnum, PartOfSpeachEnum
 
 __all__ = [
     "DateType",
     "Repetition",
     "SlugRepetition",
     "WordRepetition",
-    "WordRepetitionSchema",
     "LanguageEnum",
     "PartOfSpeachEnum",
-    "repetition_slug_association",
     "RepetitionContentTypeEnum",
-    "RepetitionSchema",
+    "calc_date_repetition",
     "RepetitionStatusEnum",
 ]

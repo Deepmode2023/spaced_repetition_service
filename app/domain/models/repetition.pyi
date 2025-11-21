@@ -1,11 +1,9 @@
 from dataclasses import dataclass
 
 from typing import Dict, Optional
-from .word.word_repetition import WordRepetitionSchema
-from app.infrastucture.db.base import ClassArgument
-from pydantic import BaseModel
+from app.domain.models.base import ClassArgument
 from app.domain.models.enum import EnumABC
-from app.domain.models.slug.slug import SlugRepetitionSchema, SlugRepetition
+from app.domain.models.slug import SlugRepetition
 
 class RepetitionStatusEnum(EnumABC):
     SUCCESSFUL = RepetitionStatusEnum
@@ -31,6 +29,7 @@ class RepetitionContentTypeEnum(EnumABC):
 class Repetition:
     id: str
     slugs: list[SlugRepetition]
+    hint: str
     title: str
     description: Optional[str]
     document_link: Optional[str]
@@ -47,15 +46,3 @@ class Repetition:
     def cls_arguments(cls) -> list[ClassArgument]: ...
     @property
     def to_json(self) -> Dict[str, Optional[int | str]]: ...
-
-class RepetitionSchema(BaseModel):
-    id: str
-    slugs: list[SlugRepetitionSchema]
-    title: str
-    description: Optional[str]
-    document_link: Optional[str]
-    user_id: str
-    count_repetition: int
-    date_repetition: int
-    date_last_repetition: Optional[int]
-    content_type: RepetitionContentTypeEnum

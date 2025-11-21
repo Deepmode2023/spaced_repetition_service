@@ -1,22 +1,25 @@
-from app.infrastucture.db.session import get_session
-
+from dataclasses import dataclass
+from app.domain.repositories.repetition import IRepetitionRepository
 from app.domain.models import Repetition
 from app.domain.models.type import DateType
-from app.infrastucture.repositories.sqlalchemy import SQLAlchemyRepetitionRepository
 
 
-async def get_all_repetition(
-    start_date: DateType,
-    end_date: DateType,
-    limit: int,
-    offset: int,
-) -> list[dict[str, any]]:
-    async with get_session() as session:
-        rep = SQLAlchemyRepetitionRepository(session=session)
-        scalar_result: list[Repetition] = await rep.get_all_repetitions(
-            start_date=start_date,
-            end_date=end_date,
-            limit=limit,
-            offset=offset,
+@dataclass(frozen=True, slots=True)
+class GetAllRepetitionQuery:
+    start_date: DateType
+    end_date: DateType
+    limit: int
+    offset: int
+
+
+@dataclass
+class GetAllRepetitionHandler:
+    repo: IRepetitionRepository
+
+    async def handle(self, query: GetAllRepetitionQuery) -> list[Repetition]:
+        return await self.repo.get_all_repetitions(
+            start_date=query.start_date,
+            end_date=query.end_date,
+            limit=query.limit,
+            offset=query.offset,
         )
-        return [result.to_json for result in scalar_result]

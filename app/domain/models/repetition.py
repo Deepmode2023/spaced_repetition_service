@@ -1,17 +1,13 @@
-from uuid import uuid4
+from uuid import UUID
 import pendulum
-from sqlalchemy import Column, Integer, String, Enum as SQLEnum
-from sqlalchemy.orm import relationship
-
-from pydantic import BaseModel
-from app.infrastucture.db.base import Base
+from dataclasses import dataclass, field
 from app.domain.models.enum import EnumABC
-from app.infrastucture.db.base import ClassArgument
+from typing import Optional
+from app.domain.models.base import ClassArgument
 
-from ..utils import repetition_formula
-from .association import repetition_slug_association
-from ..exceptions.external import UnknownFieldInsideEnum
-from app.domain.models.slug.slug import SlugRepetitionSchema
+from app.domain.utils import repetition_formula
+from app.domain.exceptions.external import UnknownFieldInsideEnum
+from app.domain.models.slug import SlugRepetition
 
 
 class RepetitionStatusEnum(str, EnumABC):
@@ -55,88 +51,16 @@ class RepetitionContentTypeEnum(str, EnumABC):
         return "repetitioncontenttypeenum"
 
 
-class Repetition(Base):
-    """
-    Repetition
-
-    The `Repetition` class is a database model designed to manage and track repetitions for different types of content, such as words, files, and texts.
-    It includes attributes for repetition tracking and methods for retrieving related content and exporting data in JSON format.
-
-    Attributes:
-        id (String, Primary Key):
-            A unique identifier for each repetition instance, generated using `uuid4`.
-
-        user_id (String, nullable=False):
-                The unique identifier of the associated user
-
-        title (String, uniq):
-                The title of the repetition
-
-        slugs (Array[String]):
-                List of associated slugs
-
-        content_type (String, Required):
-            Specifies the type of content associated with the repetition.
-            Possible values are defined in `RepetitionContentTypeEnum` (e.g., WORD, MD, TEXT).
-
-        count_repetition (Integer, Default: 0):
-            Tracks the number of times the content has been repeated.
-
-        date_repetition (Integer, Required):
-            A timestamp representing the next scheduled repetition.
-            Defaults to the current timestamp using `calc_date_repetition`.
-
-        date_last_repetition (Integer, Optional):
-            A timestamp for the last repetition of the content, or `None` if no repetition has occurred yet.
-
-    Properties:
-        to_json:
-            Exports the object's data as a JSON-compatible dictionary.
-
-            Returns:
-                A dictionary with the following fields:
-                    - `id`
-                    - `slugs`
-                    - `title`
-                    - `user_id`
-                    - `content_type`
-                    - `count_repetition`
-                    - `date_repetition`
-                    - `date_last_repetition`
-    """
-
-    __tablename__ = "repetitions"
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
-    content_type = Column(
-        SQLEnum(
-            RepetitionContentTypeEnum,
-            name=RepetitionContentTypeEnum.get_name(),
-            create_type=False,
-        ),
-        nullable=False,
-        default=RepetitionContentTypeEnum.BASE.value,
-    )
-    count_repetition = Column(Integer, default=0)
-    date_repetition = Column(
-        Integer,
-        nullable=False,
-        default=lambda: calc_date_repetition(),
-    )
-    slugs = relationship(
-        "SlugRepetition",
-        back_populates="repetitions",
-        primaryjoin="Repetition.id == repetition_slug_association.c.repetition_id",
-        secondaryjoin="SlugRepetition.id == repetition_slug_association.c.slug_id",
-        secondary=repetition_slug_association,
-    )
-    title = Column(String, nullable=False, unique=True)
-    user_id = Column(String, nullable=False)
-    date_last_repetition = Column(Integer, nullable=True)
-
-    __mapper_args__ = {
-        "polymorphic_identity": RepetitionContentTypeEnum.BASE.value,
-        "polymorphic_on": content_type,
-    }
+class Repetition:
+    id: UUID
+    title: str
+    hint: str
+    user_id: UUID
+    date_last_repetition: Optional[int] = None
+    content_type: RepetitionContentTypeEnum = RepetitionContentTypeEnum.BASE
+    cunt_repetition: int = 0
+    date_repetition: int = lambda: calc_date_repetition()
+    slugs: list[SlugRepetition] = []
 
     def __repr__(self):
         return f"Repetition(content_type={self.content_type}, title={self.title}, day_repetition={self.date_repetition}"
@@ -159,6 +83,7 @@ class Repetition(Base):
                 - `user_id`
                 - `title`
                 - `slugs`
+                - `hint`
 
             If the associated `content` has a `to_json` method, its data is merged into the dictionary.
         """
@@ -177,6 +102,7 @@ class Repetition(Base):
             "title": self.title,
             "slugs": unpacking_slugs,
             "user_id": self.user_id,
+            "hint": self.hint,
         }
 
     @classmethod
@@ -186,6 +112,7 @@ class Repetition(Base):
             ClassArgument(field="title", nullable=False),
             ClassArgument(field="slugs", nullable=False),
             ClassArgument(field="user_id", nullable=False),
+            ClassArgument(field="hint", nullable=False),
         ]
 
     def update_repetition_schedule(
@@ -248,14 +175,3 @@ def calc_date_repetition(
             return date_repetition - repetition_time_in_seconds
         case _:
             raise UnknownFieldInsideEnum(enum=RepetitionStatusEnum)
-
-
-class RepetitionSchema(BaseModel):
-    id: str
-    content_type: RepetitionContentTypeEnum
-    count_repetition: int
-    date_repetition: int
-    slugs: list[SlugRepetitionSchema]
-    title: str
-    user_id: str
-    date_last_repetition: int | None

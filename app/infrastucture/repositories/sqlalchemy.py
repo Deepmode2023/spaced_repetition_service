@@ -14,8 +14,9 @@ from app.domain.models import (
     RepetitionStatusEnum,
     WordRepetition,
 )
+from app.infrastucture.db.repetition import RepetitionSQL
 from app.domain.models.type import DateType
-from app.domain.repositories.repetition import RepetitionRepository
+from app.domain.repositories.repetition import IRepetitionRepository
 from app.domain.services.repetition import RepetitionServices
 
 
@@ -24,7 +25,7 @@ from app.domain.services.repetition import RepetitionServices
     frozen=True,
     kw_only=True,
 )
-class SQLAlchemyRepetitionRepository(RepetitionRepository):
+class SQLAlchemyRepetitionRepository(IRepetitionRepository):
     session: AsyncSession
     services = RepetitionServices()
 
@@ -35,7 +36,7 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
         limit: int,
         offset: int,
     ) -> List[WordRepetition]:
-        RepetitionPolymorphic = with_polymorphic(Repetition, "*", aliased=True)
+        RepetitionPolymorphic = with_polymorphic(RepetitionSQL, "*", aliased=True)
         stmp = (
             select(RepetitionPolymorphic)
             .options(selectinload(RepetitionPolymorphic.slugs))
@@ -47,7 +48,6 @@ class SQLAlchemyRepetitionRepository(RepetitionRepository):
             .limit(limit)
             .offset(offset)
         )
-
         result: ChunkedIteratorResult = await self.session.execute(stmp)
         return result.scalars().all()
 
