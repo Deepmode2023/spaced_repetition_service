@@ -19,7 +19,7 @@ class GlobalConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         validate_default=False,
-        env_file=f"{os.getcwd()}/app/config/env",
+        env_file=f"{os.getcwd()}/app/config/.env",
         extra="allow",
     )
 

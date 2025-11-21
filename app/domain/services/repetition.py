@@ -3,15 +3,16 @@ from functools import partial
 
 from app.domain.models.repetition import Repetition
 from app.domain.models.slug.slug import SlugRepetition
+from typing import Optional
 
-from ..exceptions import DontPassTheMandatoryKey
-from ..models import (
+from app.domain.exceptions.external import DontPassTheMandatoryKey
+from app.domain.models import (
     LanguageEnum,
     PartOfSpeachEnum,
     RepetitionContentTypeEnum,
     WordRepetition,
 )
-from ..utils import handle_arguments
+from app.domain.utils import handle_arguments
 
 
 @dataclass
@@ -21,6 +22,7 @@ class RepetitionServices:
         self,
         type_repetition: RepetitionContentTypeEnum,
         user_id: str,
+        title: str,
         slugs: list[str],
         word: Optional[str] = None,
         synonyms: Optional[list[str]] = None,
@@ -41,7 +43,6 @@ class RepetitionServices:
             word=word,
             synonyms=synonyms,
             title=title,
-            slugs=self._create_slugs(slugs),
         )
         slugs = [SlugRepetition(name=name) for name in kwargs.pop("slugs")]
 

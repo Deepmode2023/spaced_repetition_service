@@ -12,8 +12,8 @@ async def get_all_repetition(
     offset: int,
 ) -> list[dict[str, any]]:
     async with get_session() as session:
-        dao = SQLAlchemyRepetitionRepository(session=session)
-        scalar_result: list[Repetition] = await dao.get_all_repetitions(
+        rep = SQLAlchemyRepetitionRepository(session=session)
+        scalar_result: list[Repetition] = await rep.get_all_repetitions(
             start_date=start_date,
             end_date=end_date,
             limit=limit,

@@ -1,4 +1,11 @@
-from sqlalchemy import ARRAY, Column, String, Enum as SQLEnum, ForeignKeyConstraint
+from sqlalchemy import (
+    ARRAY,
+    Column,
+    String,
+    Enum as SQLEnum,
+    ForeignKeyConstraint,
+    ForeignKey,
+)
 
 from pydantic import BaseModel
 from ..enum import EnumABC
@@ -93,7 +100,11 @@ class WordRepetition(Repetition):
     """
 
     __tablename__ = "word_repetitions"
-    id = Column(String(36), primary_key=True)
+    id = Column(
+        String(36),
+        ForeignKey("repetitions.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
     word = Column(String, unique=True, nullable=False)
     translate = Column(ARRAY(String), nullable=True)
     synonyms = Column(ARRAY(String), nullable=True)

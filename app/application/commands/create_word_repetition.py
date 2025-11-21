@@ -28,8 +28,8 @@ async def create_word_repetition(
     title: str,
 ):
     async with get_session() as session:
-        dao = SQLAlchemyRepetitionRepository(session=session)
-        repetition: WordRepetition = await dao.create_repetition(
+        rep = SQLAlchemyRepetitionRepository(session=session)
+        repetition: WordRepetition = await rep.create_repetition(
             title=title,
             content_type=RepetitionContentTypeEnum.WORD,
             user_id=user_id,
