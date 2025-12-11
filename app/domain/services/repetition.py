@@ -17,7 +17,6 @@ from app.domain.utils import handle_arguments
 
 @dataclass
 class RepetitionServices:
-
     async def create_repetition(
         self,
         type_repetition: RepetitionContentTypeEnum,

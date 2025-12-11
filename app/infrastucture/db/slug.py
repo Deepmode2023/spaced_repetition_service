@@ -1,8 +1,7 @@
 from .base import Base
 from uuid import uuid4
-from app.domain.models.base import ClassArgument
 
-from sqlalchemy import Column, String
+from sqlalchemy import Column, String, Integer
 from sqlalchemy.orm import relationship
 
 from .association import repetition_slug_association
@@ -11,7 +10,7 @@ from .association import repetition_slug_association
 class SlugRepetitionSQL(Base):
     __tablename__ = "slug_repetitions"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    id = Column(Integer, primary_key=True)
     name = Column(String, unique=True)
     repetitions = relationship(
         "RepetitionSQL",

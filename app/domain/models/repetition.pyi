@@ -27,7 +27,7 @@ class RepetitionContentTypeEnum(EnumABC):
 
 @dataclass(kw_only=True)
 class Repetition:
-    id: str
+    id: int
     slugs: list[SlugRepetition]
     hint: str
     title: str
@@ -46,3 +46,9 @@ class Repetition:
     def cls_arguments(cls) -> list[ClassArgument]: ...
     @property
     def to_json(self) -> Dict[str, Optional[int | str]]: ...
+
+def calc_date_repetition(
+    count_repetition: int,
+    repetition_status: Optional[RepetitionStatusEnum],
+    date_repetition: Optional[int],
+) -> int: ...

@@ -57,13 +57,14 @@ class LanguageEnum(EnumABC):
 class WordRepetition(Repetition):
     word: str
     part_of_speech: PartOfSpeachEnum
+
     examples: list[str] = field(default_factory=list)
     translate: list[str] = field(default_factory=list)
     synonyms: list[str] = field(default_factory=list)
     language: LanguageEnum = field(default=LanguageEnum.ENGLISH_BR)
-    context: Optional[str] = None
+    context: Optional[str] = field(default=None)
     possible_options: list[str] = field(default_factory=list)
-    image_url: Optional[str] = None
+    image_url: Optional[str] = field(default=None)
 
     def __repr__(self):
         return f"WordRepetition(id={self.id}, word={self.word})"

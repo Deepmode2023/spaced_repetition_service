@@ -1,4 +1,3 @@
-from enum import Enum
 from ..enum import EnumABC
 
 class PartOfSpeachEnum(EnumABC):
@@ -32,7 +31,7 @@ class LanguageEnum(EnumABC):
 class WordRepetition:
     def __init__(
         self,
-        id: str,
+        id: int,
         word: str,
         translate: str,
         synonyms: list[str],

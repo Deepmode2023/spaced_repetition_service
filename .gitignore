@@ -8,3 +8,5 @@ app/config/env
 .vscode/
 *DS_Store
 *venv
+
+.pytest_cache

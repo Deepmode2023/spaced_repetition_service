@@ -1,5 +1,4 @@
 from .base import Base
-from uuid import uuid4
 from sqlalchemy import Column, Integer, String, Enum as SQLEnum
 from sqlalchemy.orm import relationship
 from app.domain.models import RepetitionContentTypeEnum, calc_date_repetition
@@ -8,7 +7,7 @@ from .association import repetition_slug_association
 
 class RepetitionSQL(Base):
     __tablename__ = "repetitions"
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    id = Column(Integer, primary_key=True)
     content_type = Column(
         SQLEnum(
             RepetitionContentTypeEnum,
@@ -32,7 +31,7 @@ class RepetitionSQL(Base):
         secondary=repetition_slug_association,
     )
     title = Column(String, nullable=False, unique=True)
-    user_id = Column(String, nullable=False)
+    user_id = Column(Integer, nullable=False)
     date_last_repetition = Column(Integer, nullable=True)
 
     __mapper_args__ = {

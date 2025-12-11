@@ -1,5 +1,4 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from uuid import UUID
 from app.domain.models import (
     LanguageEnum,
     PartOfSpeachEnum,
@@ -8,10 +7,37 @@ from app.domain.models import (
     SlugRepetition,
     WordRepetition,
 )
-from app.infrastucture.db.session import get_session
-from app.infrastucture.repositories.sqlalchemy import SQLAlchemyRepetitionRepository
+from dataclasses import dataclass
 
-from ..http.exception import HTTPExceptionResponse
+
+@dataclass
+class CreateWordQuery:
+    user_id: UUID
+    word: str
+    synonyns: list[str]
+    part_of_speech: PartOfSpeachEnum
+    examples: list[str]
+    possible_options: list[str]
+    context: str
+    language: LanguageEnum
+    translate: list[str]
+    slugs: list[str]
+    title: str
+
+
+@dataclass
+class CreateWordHadnler:
+    user_id: UUID
+    word: str
+    synonyns: list[str]
+    part_of_speech: PartOfSpeachEnum
+    examples: list[str]
+    possible_options: list[str]
+    context: str
+    language: LanguageEnum
+    translate: list[str]
+    slugs: list[str]
+    title: str
 
 
 async def create_word_repetition(

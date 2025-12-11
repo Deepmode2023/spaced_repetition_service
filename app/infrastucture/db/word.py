@@ -6,6 +6,7 @@ from sqlalchemy import (
     Enum as SQLEnum,
     ForeignKeyConstraint,
     ForeignKey,
+    Integer,
 )
 from app.domain.models import PartOfSpeachEnum, LanguageEnum, RepetitionContentTypeEnum
 
@@ -13,7 +14,7 @@ from app.domain.models import PartOfSpeachEnum, LanguageEnum, RepetitionContentT
 class WordRepetitionSQL(Base):
     __tablename__ = "word_repetitions"
     id = Column(
-        String(36),
+        Integer,
         ForeignKey("repetitions.id", ondelete="CASCADE"),
         primary_key=True,
     )

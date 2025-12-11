@@ -4,7 +4,7 @@ from app.domain.models.base import ClassArgument
 
 @dataclass(kw_only=True)
 class SlugRepetition:
-    id: str
+    id: int
     name: str
     @classmethod
     def cls_arguments(cls) -> list[ClassArgument]: ...

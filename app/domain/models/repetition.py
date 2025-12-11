@@ -1,4 +1,3 @@
-from uuid import UUID
 import pendulum
 from dataclasses import dataclass, field
 from app.domain.models.enum import EnumABC
@@ -8,6 +7,7 @@ from app.domain.models.base import ClassArgument
 from app.domain.utils import repetition_formula
 from app.domain.exceptions.external import UnknownFieldInsideEnum
 from app.domain.models.slug import SlugRepetition
+from app.domain.utils.snowflake import seq
 
 
 class RepetitionStatusEnum(str, EnumABC):
@@ -51,15 +51,30 @@ class RepetitionContentTypeEnum(str, EnumABC):
         return "repetitioncontenttypeenum"
 
 
+def calc_date_repetition(
+    count_repetition: int = 0,
+    repetition_status: RepetitionStatusEnum = RepetitionStatusEnum.STARTING,
+    date_repetition: int = int(pendulum.now().timestamp()),
+) -> int:
+    repetition_time_in_seconds = repetition_formula(count_repetition)
+    match repetition_status:
+        case RepetitionStatusEnum.STARTING | RepetitionStatusEnum.SUCCESSFUL:
+            return date_repetition + repetition_time_in_seconds
+        case RepetitionStatusEnum.UNSUCCESSFUL:
+            return date_repetition - repetition_time_in_seconds
+        case _:
+            raise UnknownFieldInsideEnum(enum=RepetitionStatusEnum)
+
+
 class Repetition:
-    id: UUID
     title: str
     hint: str
-    user_id: UUID
+    user_id: int
+    id: int = lambda: next(seq)
     date_last_repetition: Optional[int] = None
     content_type: RepetitionContentTypeEnum = RepetitionContentTypeEnum.BASE
     cunt_repetition: int = 0
-    date_repetition: int = lambda: calc_date_repetition()
+    date_repetition: int = calc_date_repetition
     slugs: list[SlugRepetition] = []
 
     def __repr__(self):
@@ -160,18 +175,3 @@ class Repetition:
             repetition_status=repetition_status,
             date_repetition=self.date_repetition,
         )
-
-
-def calc_date_repetition(
-    count_repetition: int = 0,
-    repetition_status: RepetitionStatusEnum = RepetitionStatusEnum.STARTING,
-    date_repetition: int = int(pendulum.now().timestamp()),
-) -> int:
-    repetition_time_in_seconds = repetition_formula(count_repetition)
-    match repetition_status:
-        case RepetitionStatusEnum.STARTING | RepetitionStatusEnum.SUCCESSFUL:
-            return date_repetition + repetition_time_in_seconds
-        case RepetitionStatusEnum.UNSUCCESSFUL:
-            return date_repetition - repetition_time_in_seconds
-        case _:
-            raise UnknownFieldInsideEnum(enum=RepetitionStatusEnum)
