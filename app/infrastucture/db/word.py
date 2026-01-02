@@ -8,7 +8,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
 )
-from app.domain.models import PartOfSpeachEnum, LanguageEnum, RepetitionContentTypeEnum
+from app.domain.vo import PartOfSpeachEnum, LanguageEnum, RepetitionContentTypeEnum
 
 
 class WordRepetitionSQL(Base):

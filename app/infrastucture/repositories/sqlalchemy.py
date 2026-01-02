@@ -5,26 +5,21 @@ from sqlalchemy import ChunkedIteratorResult, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.infrastucture.exceptions.sqlalchemy import DuplicateAddedEntity
-from app.domain.utils import SieveValueErrorExceptionExternal
 from sqlalchemy.orm import with_polymorphic, selectinload
 
-from app.domain.models import (
-    Repetition,
+from app.domain.vo import (
     RepetitionContentTypeEnum,
     RepetitionStatusEnum,
-    WordRepetition,
 )
+from app.domain.entities import Repetition, WordRepetition
 from app.infrastucture.db.repetition import RepetitionSQL
-from app.domain.models.type import DateType
-from app.domain.repositories.repetition import IRepetitionRepository
-from app.domain.services.repetition import RepetitionServices
+from app.domain.common.vo import DateType
+from app.domain.repository.repetition import IRepetitionRepository
+from app.application.repetition import RepetitionServices
+from app.domain.common.utils import SieveValueErrorExceptionExternal
 
 
-@dataclass(
-    eq=False,
-    frozen=True,
-    kw_only=True,
-)
+@dataclass(eq=False, frozen=True, kw_only=True)
 class SQLAlchemyRepetitionRepository(IRepetitionRepository):
     session: AsyncSession
     services = RepetitionServices()

@@ -2,7 +2,7 @@ import asyncio
 
 from fastapi import HTTPException
 
-from app.domain.exceptions.base import BaseExceptionExternal
+from app.domain.common import BaseExceptionExternal
 
 
 class BaseExceptionUnknown(BaseExceptionExternal):

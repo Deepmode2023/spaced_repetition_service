@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from app.domain.repositories.repetition import IRepetitionRepository
-from app.domain.models import Repetition
-from app.domain.models.type import DateType
+from app.domain.repository.repetition import IRepetitionRepository
+from app.domain.entities import Repetition
+from app.domain.common.vo import DateType
 
 
 @dataclass(frozen=True, slots=True)

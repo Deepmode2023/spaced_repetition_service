@@ -1,7 +1,8 @@
 from .base import Base
 from sqlalchemy import Column, Integer, String, Enum as SQLEnum
 from sqlalchemy.orm import relationship
-from app.domain.models import RepetitionContentTypeEnum, calc_date_repetition
+from app.domain.vo import RepetitionContentTypeEnum
+from app.domain.services import RepetitionScheduler
 from .association import repetition_slug_association
 
 
@@ -21,7 +22,7 @@ class RepetitionSQL(Base):
     date_repetition = Column(
         Integer,
         nullable=False,
-        default=lambda: calc_date_repetition(),
+        default=lambda: RepetitionScheduler.calculate_next_date(),
     )
     slugs = relationship(
         "SlugRepetitionSQL",

@@ -1,7 +1,8 @@
 from typing import TypeVar, Generic, Union, Annotated, List, Optional
 from pydantic import BaseModel
 from uuid import UUID
-from app.domain.models import SlugRepetition, RepetitionContentTypeEnum, Repetition
+from app.domain.entities import SlugRepetition, Repetition
+from app.domain.vo import RepetitionContentTypeEnum
 
 T = TypeVar("T")
 

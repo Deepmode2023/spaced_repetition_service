@@ -1,4 +1,4 @@
-from app.domain.exceptions.base import BaseExceptionExternal
+from app.domain.common.exceptions import BaseExceptionExternal
 from dataclasses import dataclass, field
 
 

@@ -1,2 +1,2 @@
-from app.domain.models import Repetition, WordRepetition
+from app.domain.entities import Repetition, WordRepetition
 from typing import Annotated

@@ -1,7 +1,7 @@
 from fastapi import File, UploadFile
 from pydantic import BaseModel
 
-from app.domain.models import LanguageEnum, PartOfSpeachEnum
+from app.domain.vo import LanguageEnum, PartOfSpeachEnum
 
 
 class CreateFileRepetitionRequest(BaseModel):
