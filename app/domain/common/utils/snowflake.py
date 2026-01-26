@@ -2,7 +2,6 @@ import time
 from datetime import datetime
 from app.config.config import logger
 
-
 tw_epoch = int(datetime.now().timestamp())
 
 
@@ -15,6 +14,21 @@ worker_id_shift = sequence_bits
 data_center_id_shift = sequence_bits + worker_id_bits
 timestamp_left_shift = sequence_bits + worker_id_bits + data_center_id_bits
 sequence_mask = -1 ^ (-1 << sequence_bits)
+
+
+def is_snowflake_id(value: int) -> bool:
+    if not isinstance(value, int) or isinstance(value, bool):
+        return False
+
+    if value < 0 or value >= (1 << 63):
+        return False
+
+    timestamp_part = value >> timestamp_left_shift
+
+    if timestamp_part <= 0:
+        return False
+
+    return True
 
 
 def snowflake_to_timestamp(_id):

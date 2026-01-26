@@ -1,10 +1,11 @@
 from .base import BaseExceptionInternal, BaseExceptionExternal
-from .external import UnknownFieldInsideEnum, DontPassTheMandatoryKey
+from .external import UnknownFieldInsideEnum, DontPassTheMandatoryKey, WrongIDType
 from .internal import (
     DatabaseError,
     ValidationError,
     WrongEntityError,
     WrongEnumInstError,
+    IncorrectURLString,
 )
 
 __all__ = [
@@ -16,4 +17,6 @@ __all__ = [
     "WrongEntityError",
     "WrongEnumInstError",
     "DontPassTheMandatoryKey",
+    "WrongIDType",
+    "IncorrectURLString",
 ]

@@ -19,3 +19,11 @@ class DontPassTheMandatoryKey(BaseExceptionExternal):
 
     def get_message(self):
         return f"You do not pass the mandatory key [{self.key}]. It is mandatory for the system."
+
+
+@dataclass
+class WrongIDType(BaseExceptionExternal):
+    status: int = field(default=409)
+
+    def get_message(self):
+        return f"You will pass wrong type of field `id` must be [Positive Integer] type"

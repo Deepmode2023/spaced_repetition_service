@@ -11,6 +11,7 @@ from app.infrastucture.db import (
     SlugRepetitionSQL,
     WordRepetitionSQL,
     repetition_slug_association,
+    MDRepetitionSQL,
 )
 from app.infrastucture.db.base import Base
 

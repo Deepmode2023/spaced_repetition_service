@@ -1,14 +1,15 @@
-from typing import Optional
-
-from fastapi import APIRouter, Depends
+from typing import Optional, Annotated
+from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.infrastucture.repositories.sqlalchemy import SQLAlchemyRepetitionRepository
+
+
+from app.infrastucture.repository.sqlalchemy import SQLAlchemyRepetitionRepository
 from app.application.commands import create_word_repetition
 from app.application.queries.get_all_repetition import (
     GetAllRepetitionHandler,
     GetAllRepetitionQuery,
 )
-from app.application.schemas.repeptition import (
+from app.application.schemas.repetition import (
     CreateFileRepetitionRequest,
     CreateWordRepetitionRequest,
 )
@@ -17,7 +18,6 @@ from app.application.schemas.response import (
     RepetitionResponse,
 )
 from app.application.http.exception import HTTPExceptionResponse
-
 from .date_type import OptionalQueryDateType, RequiredQueryDateType
 from .dependencies import auth_marker, session
 
@@ -64,9 +64,7 @@ async def get_repetition(
     "/create_repetition/word",
     response_model=RepetitionSchemaResponse,
 )
-async def create_word(
-    request: CreateWordRepetitionRequest,
-):
+async def create_word(request: CreateWordRepetitionRequest):
     try:
         created_repetition = await create_word_repetition(**request.model_dump())
 
@@ -79,8 +77,9 @@ async def create_word(
         return HTTPExceptionResponse(e).response
 
 
-@with_auth_repetition_route.post("/create_repetition/file")
+@with_auth_repetition_route.post("/create_repetition/md")
 async def create_file_repetition(
-    request: CreateFileRepetitionRequest,
+    request: CreateFileRepetitionRequest = Depends(CreateFileRepetitionRequest.as_form),
+    document: UploadFile = Annotated[bytes, File(...)],
 ):
-    pass
+    print(document)

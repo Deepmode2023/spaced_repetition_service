@@ -32,9 +32,7 @@ OPENAPI_DOCS = {
 class DateType(Date):
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type, handler):
-        return core_schema.with_info_plain_validator_function(
-            cls.validate_date_field, metadata={"type": "string"}
-        )
+        return core_schema.with_info_plain_validator_function(cls._parse)
 
     @classmethod
     def __get_pydantic_json_schema__(cls, schema: core_schema.CoreSchema, handler):

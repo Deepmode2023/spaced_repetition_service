@@ -2,7 +2,7 @@ from app.domain.entities import Repetition, SlugRepetition, WordRepetition
 from app.domain.vo import LanguageEnum, PartOfSpeachEnum, RepetitionContentTypeEnum
 from dataclasses import dataclass
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.infrastucture.repositories.sqlalchemy import SQLAlchemyRepetitionRepository
+from app.infrastucture.repository.sqlalchemy import SQLAlchemyRepetitionRepository
 
 
 @dataclass

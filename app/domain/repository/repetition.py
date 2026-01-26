@@ -2,37 +2,58 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Optional
 
-from ..vo import RepetitionContentTypeEnum, PartOfSpeachEnum, LanguageEnum
-from ..entities import Repetition, WordRepetition
-from app.domain.common.vo import DateType
+from ..vo import PartOfSpeachEnum, LanguageEnum
+from ..entities import Repetition, WordRepetition, MDRepetition
+from app.domain.common.vo import DateType, URL
 
 
 @dataclass(eq=False, frozen=True)
 class IRepetitionRepository(ABC):
     @abstractmethod
     async def get_all_repetitions(
+        self,
         start_date: DateType,
         end_date: DateType,
         limit: int,
         offset: int,
+        tags: Optional[str] = [],
+    ) -> List[Repetition]: ...
+
+    @abstractmethod
+    async def get_study_repetitions(
+        self,
+        limit: int,
+        offset: int,
+        tags: Optional[str] = [],
     ) -> List[Repetition]: ...
 
     @abstractmethod
     async def update_repetition(
-        repetition_id: str,
+        self,
+        id: str,
         title: Optional[str] = None,
-        description: Optional[str] = None,
         document_link: Optional[str] = None,
         slugs: Optional[list[str]] = [],
+        hint: Optional[str] = None,
+        count_repetition: Optional[int] = None,
+        date_repetition: Optional[int] = None,
+        date_last_repetition: Optional[int] = None,
     ) -> bool: ...
 
     @abstractmethod
     async def create_repetition(
+        self,
         title: str,
         user_id: str,
-        content_type: RepetitionContentTypeEnum,
-        description: Optional[str] = None,
-        document_link: Optional[str] = None,
+        slugs: Optional[list[str]] = [],
+        hint: Optional[str] = None,
+    ) -> Repetition: ...
+
+    @abstractmethod
+    async def create_word_repetition(
+        self,
+        title: str,
+        user_id: str,
         slugs: Optional[list[str]] = [],
         word: Optional[str] = None,
         translate: Optional[list[str]] = None,
@@ -45,7 +66,17 @@ class IRepetitionRepository(ABC):
     ) -> WordRepetition: ...
 
     @abstractmethod
-    async def successful_repetition(repetition_id: str) -> bool: ...
+    async def create_md_repetition(
+        self,
+        title: str,
+        user_id: str,
+        document: bytes,
+        document_link: Optional[URL] = None,
+        slugs: Optional[list[str]] = [],
+    ) -> MDRepetition: ...
 
     @abstractmethod
-    async def unsuccessful_repetition(repetition_id: str) -> bool: ...
+    async def successful_repetition(self, repetition_id: str) -> bool: ...
+
+    @abstractmethod
+    async def unsuccessful_repetition(self, repetition_id: str) -> bool: ...

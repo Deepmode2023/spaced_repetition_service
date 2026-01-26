@@ -14,7 +14,7 @@ from app.domain.vo import (
 from app.domain.entities import Repetition, WordRepetition
 from app.infrastucture.db.repetition import RepetitionSQL
 from app.domain.common.vo import DateType
-from app.domain.repository.repetition import IRepetitionRepository
+from app.domain.repository import IRepetitionRepository
 from app.application.repetition import RepetitionServices
 from app.domain.common.utils import SieveValueErrorExceptionExternal
 

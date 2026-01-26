@@ -33,3 +33,11 @@ class WrongEntityError(BaseExceptionInternal):
 
     def get_message(self):
         return f"You put the wrong entity {self.entity} in place {self.place}. Please put the correct type {self.entity_type}!"
+
+
+@dataclass
+class IncorrectURLString(BaseExceptionInternal):
+    url: str
+
+    def get_message(self):
+        return f"You put the wrong url {self.url}!"

@@ -1,6 +1,7 @@
 from typing import Optional
 from dataclasses import dataclass
-from ..exceptions.base import BaseExceptionExternal, BaseExceptionInternal
+from ..exceptions.base import BaseExceptionExternal
+from ..models import ClassArgument
 
 
 @dataclass
@@ -12,74 +13,33 @@ class SieveValueErrorExceptionExternal(BaseExceptionExternal):
         return f"Need to pass the mandatory fields={', '.join(self.mandatory_fields)}"
 
 
-@dataclass
-class SieveValueErrorExceptionInternal(BaseExceptionInternal):
-    message: str
-
-    def get_message(self):
-        return self.message
-
-
-def validate_mandatory_field(field: str, kwargs: dict):
-    if field not in kwargs:
+def validate_mandatory_field(field: str, kwargs: dict, acc: dict) -> None:
+    if field not in kwargs or kwargs[field] is None:
         raise SieveValueErrorExceptionExternal(mandatory_fields=[field])
 
+    acc[field] = kwargs[field]
 
-def process_field(field: str, kwargs: dict, acc: dict):
+
+def process_field(field: str, kwargs: dict, acc: dict) -> None:
     if field in kwargs and kwargs[field] is not None:
         acc[field] = kwargs[field]
 
 
-def seive_kwargs_by_white_list(
-    white_list: list[tuple[str, bool]],
-    kwargs: dict[str, any] = None,
+def seive_fields(
+    required_fields: Optional[tuple[ClassArgument, ...]] = None,
     acc: dict[str, any] = None,
+    **kwargs: dict[str, any],
 ) -> dict[str, any]:
-    from ..models import ClassArgument
-
-    kwargs = kwargs or {}
     acc = acc or {}
 
-    if not isinstance(white_list, list) or any(
-        not isinstance(item, ClassArgument) for item in white_list
-    ):
-        raise TypeError("white_list must contain the list[ClassArgument] type")
+    if any(not isinstance(item, ClassArgument) for item in required_fields):
+        raise TypeError("white_list must contain the tuple[ClassArgument] type")
 
-    for field, nullable in white_list:
+    for field, nullable in required_fields:
         if not nullable:
-            validate_mandatory_field(field, kwargs)
+            validate_mandatory_field(field, kwargs, acc)
+            continue
+
         process_field(field, kwargs, acc)
 
     return acc
-
-
-def args_sieve(
-    args: list[any],
-) -> list[any]:
-    """
-    Filters a List passed as positional arguments, excluding keys that are `None`.
-
-    Args:
-        *args: Positional dictionaries to filter. Only the first list is processed.
-    Returns:
-        List[Any]: A filtered dictionary.
-
-    Raises:
-        ValueError: If no dictionary is provided or the first argument is not a list.
-    """
-
-    if isinstance(args, list) or isinstance(args, tuple):
-        return [arg for arg in args if arg is not None]
-
-    raise SieveValueErrorExceptionInternal(message="args must be a list or tuple.")
-
-
-def handle_arguments(
-    white_list_keys: Optional[list[str]] = [],
-    *args: dict[any, any],
-    **kwargs: dict[any, any],
-) -> list[list[any], dict[any, any]]:
-    return (
-        args_sieve(args),
-        seive_kwargs_by_white_list(kwargs=kwargs, white_list=white_list_keys),
-    )

@@ -11,7 +11,7 @@ from app.domain.vo import (
     RepetitionContentTypeEnum,
 )
 from app.domain.entities import Repetition, WordRepetition, SlugRepetition
-from app.domain.common.utils import handle_arguments
+from app.domain.common.utils import seive_fields
 
 
 @dataclass
@@ -37,7 +37,7 @@ class RepetitionServices:
             raise DontPassTheMandatoryKey(key="slugs")
 
         partial_args = partial(
-            handle_arguments,
+            seive_fields,
             slugs=slugs,
             user_id=user_id,
             word=word,
@@ -49,7 +49,7 @@ class RepetitionServices:
         match type_repetition:
             case RepetitionContentTypeEnum.WORD:
                 _, kwargs = partial_args(
-                    white_list_keys=WordRepetition.cls_arguments() + ["slugs"]
+                    required_fields=WordRepetition.cls_arguments() + ["slugs"]
                 )
                 word: WordRepetition = await self.__word_handler(**kwargs)
 

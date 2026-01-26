@@ -9,7 +9,6 @@ from dataclasses import dataclass, field
 class WordRepetition(Repetition):
     word: str
     part_of_speech: PartOfSpeachEnum
-
     examples: list[str] = field(default_factory=list)
     translate: list[str] = field(default_factory=list)
     synonyms: list[str] = field(default_factory=list)
