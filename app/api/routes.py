@@ -1,17 +1,23 @@
-from typing import Optional
-
-from fastapi import APIRouter, Depends
+from typing import Optional, Annotated
+from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
+from app.infrastucture.repository.sqlalchemy import SQLAlchemyRepetitionRepository
 from app.application.commands import create_word_repetition
-from app.application.queries.get_all_repetition import get_all_repetition
-from app.schemas.repeptition import (
+from app.application.queries.get_all_repetition import (
+    GetAllRepetitionHandler,
+    GetAllRepetitionQuery,
+)
+from app.application.schemas.repetition import (
     CreateFileRepetitionRequest,
     CreateWordRepetitionRequest,
 )
-from app.schemas.response import RepetitionSchemaResponse
+from app.application.schemas.response import (
+    RepetitionSchemaResponse,
+    RepetitionResponse,
+)
 from app.application.http.exception import HTTPExceptionResponse
-
 from .date_type import OptionalQueryDateType, RequiredQueryDateType
 from .dependencies import auth_marker, session
 
@@ -30,19 +36,26 @@ async def get_repetition(
     end_date: RequiredQueryDateType,
     limit: Optional[int] = 50,
     offset: Optional[int] = 0,
+    session: AsyncSession = Depends(session),
 ):
     try:
-        repetitions = await get_all_repetition(
-            start_date=start_date,
-            end_date=end_date,
-            limit=limit,
-            offset=offset,
+        repo = SQLAlchemyRepetitionRepository(session=session)
+        handler = GetAllRepetitionHandler(repo=repo)
+        repetitions = await handler.handle(
+            GetAllRepetitionQuery(
+                start_date,
+                end_date,
+                limit,
+                offset,
+            )
         )
+
         return RepetitionSchemaResponse(
             status=200,
             details="Successfull",
-            model=repetitions,
+            model=[RepetitionResponse.from_domain(rep) for rep in repetitions],
         )
+
     except Exception as e:
         return HTTPExceptionResponse(e).response
 
@@ -51,9 +64,7 @@ async def get_repetition(
     "/create_repetition/word",
     response_model=RepetitionSchemaResponse,
 )
-async def create_word(
-    request: CreateWordRepetitionRequest,
-):
+async def create_word(request: CreateWordRepetitionRequest):
     try:
         created_repetition = await create_word_repetition(**request.model_dump())
 
@@ -66,8 +77,9 @@ async def create_word(
         return HTTPExceptionResponse(e).response
 
 
-@with_auth_repetition_route.post("/create_repetition/file")
+@with_auth_repetition_route.post("/create_repetition/md")
 async def create_file_repetition(
-    request: CreateFileRepetitionRequest,
+    request: CreateFileRepetitionRequest = Depends(CreateFileRepetitionRequest.as_form),
+    document: UploadFile = Annotated[bytes, File(...)],
 ):
-    pass
+    print(document)

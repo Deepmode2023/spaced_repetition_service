@@ -2,6 +2,18 @@ import os
 from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import logging
+from logging.handlers import RotatingFileHandler
+
+handler = RotatingFileHandler("monitor.logs", maxBytes=5000000, backupCount=3)
+formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+handler.setFormatter(formatter)
+handler.setLevel(logging.ERROR)
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
 
 
 class GlobalConfig(BaseSettings):
